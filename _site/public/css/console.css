@@ -1,25 +1,38 @@
 #console {
-    background-color: #000;
-    border-radius: 5px;
-    font-family: courier, monospace;
-    color: #fff;
-    width:750px;
+    background-color: #fffaf0; /* Floral White */
+    border-radius: 8px;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    color: #228B22; /* Forest Green */
+    width: 750px;
     height: 400px; 
-    margin-left:auto;
-    margin-right:auto;
-    margin-bottom:20px;
-    font-size:14px;
+    margin: 40px auto 20px auto;
+    font-size: 17px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 64, 0, 0.1);
+    border: 1px solid #e6decf;
 }
+
+/* Link styling with elegant green */
 #console > a {
-    color: #0bc;
+    color: #006400;
     text-decoration: none;
+    transition: color 0.3s ease;
 }
+#console > a:hover {
+    color: #004225;
+    text-decoration: underline;
+}
+
+/* Prompt colors (more subdued and premium looking) */
 #console > #a {
-    color: #0f0;
-}
-#console > #c {
-    color: #0bc;
+    color: #4F7942; /* Fern Green */
 }
 #console > #b {
-    color: #ff0096;
+    color: #B03060; /* Rich Rose */
+}
+#console > #c {
+    color: #4682B4; /* Steel Blue */
 }
