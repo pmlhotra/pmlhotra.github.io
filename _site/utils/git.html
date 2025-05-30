@@ -40,7 +40,7 @@
       <header class="top row gutters">
         <div class="col span_2 center">
           <!-- TODO: add baseurl to the logo link -->
-          <a href="https://localhost:4000" id="logo" title="Pankaj Malhotra"
+          <a href="http://localhost:4000" id="logo" title="Pankaj Malhotra"
              style="background-image: url(/public/images/logo.png);"></a>
         </div>
         <nav class="col span_10 top-navbar">
@@ -61,24 +61,25 @@
 
       </header>
 
-      <figure class="highlight"><pre><code class="language-bash" data-lang="bash">Workflow <span class="k">for </span>working on GIT and Github
+      
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">Workflow <span class="k">for </span>working on GIT and Github
 
 Set Git Env variables:
-git config --global user.name <span class="s2">"Full Name"</span>
-git config --global user.email <span class="s2">"user@example.com"</span>
-git config --global core.editor vim
-git config --global merge.tool vimdiff
+git config <span class="nt">--global</span> user.name <span class="s2">"Full Name"</span>
+git config <span class="nt">--global</span> user.email <span class="s2">"user@example.com"</span>
+git config <span class="nt">--global</span> core.editor vim
+git config <span class="nt">--global</span> merge.tool vimdiff
 
 Proxy Settings:
-git config --global http.proxy http://proxyuser:proxypwd@proxy.server.com:8080
-git config --global https.proxy https://proxyuser:proxypwd@proxy.server.com:8080
+git config <span class="nt">--global</span> http.proxy http://proxyuser:proxypwd@proxy.server.com:8080
+git config <span class="nt">--global</span> https.proxy https://proxyuser:proxypwd@proxy.server.com:8080
 
 1<span class="o">)</span> Fork the orgs repo <span class="k">in </span>Github
 
 2<span class="o">)</span> Clone the repo from your Github Account
 git clone &lt;clone url of repo <span class="k">in </span>your github account&gt; 
 
-3<span class="o">)</span> git remote add upstream &lt;clone url <span class="k">for </span>orgs repo on github &gt;
+3<span class="o">)</span> git remote add upstream &lt;clone url <span class="k">for </span>orgs repo on github <span class="o">&gt;</span>
 
 4<span class="o">)</span> origin is our repo<span class="o">(</span>the url to repo <span class="k">in </span>our github account<span class="o">)</span> by default 
 check by : git remote show origin
@@ -87,22 +88,22 @@ check by : git remote show origin
 check by : git branch
 
 6<span class="o">)</span> create a new working branch <span class="o">(</span> <span class="k">do </span>not work <span class="k">in </span>master branch <span class="o">)</span>
-git checkout -b working
--make changes on this branch
+git checkout <span class="nt">-b</span> working
+<span class="nt">-make</span> changes on this branch
 
 7<span class="o">)</span> update master branch everytime you start working
 <span class="o">(</span>since the org code might have changed <span class="k">while </span>you were working on it<span class="o">)</span>
 git checkout master
-git pull --rebase upstream master
+git pull <span class="nt">--rebase</span> upstream master
 
 8<span class="o">)</span> rebase the working branch to master branch<span class="o">(</span>to apply you changes on latest code<span class="o">)</span>
 git checkout working
 git rebase master
 
-// not necessary <span class="k">for </span>first <span class="nb">time </span>users
-9<span class="o">)</span> squash the commits // <span class="k">if </span>you have more than one 
+// not necessary <span class="k">for </span>first <span class="nb">time users
+</span>9<span class="o">)</span> squash the commits // <span class="k">if </span>you have more than one 
 // commits combine them into single commit
-git rebase -i HEAD~x 
+git rebase <span class="nt">-i</span> HEAD~x 
 
 11<span class="o">)</span> And <span class="k">for </span>publishing the code 
 push code to working branch
@@ -110,6 +111,7 @@ git push origin working
 
 12<span class="o">)</span> Send a pull request <span class="o">(</span>change the default master branch to working<span class="o">)</span>
 branch from where u want the code to be pulled </code></pre></figure>
+
 
       
           <div id="disqus_thread"></div>
@@ -125,7 +127,7 @@ branch from where u want the code to be pulled </code></pre></figure>
         })();
     </script>
     <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    <a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
     
 
       
@@ -134,9 +136,7 @@ branch from where u want the code to be pulled </code></pre></figure>
 
       <footer>
           <p>
-          Subscribe to: <a href="/feed.xml" target="_blank">Posts(Atom)</a>
-	  <br/>
-	  No Attributions, It's all yours under <a rel="license" href="http://creativecommons.org/publicdomain/zero/1.0/"> Creative Commons CC0</a>.
+          Thank you, please contact via email
         </p>
       </footer>
     </div>

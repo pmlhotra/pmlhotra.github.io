@@ -26,7 +26,7 @@
 <link rel="stylesheet" href="/public/css/til.css">
 
 <!-- Google fonts -->
-<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
 <link href='https://fonts.googleapis.com/css?family=Give+You+Glory' rel='stylesheet' type='text/css'>
 
 
@@ -65,7 +65,7 @@
   <time class="published" datetime="2015-06-28">28 June 2015</time>
   <h2>Retrieving Safari History From JailBroken IOS Device</h2>
 
-  <h3>This post is for Jail Broken devices and tested on IOS 8.1.2.</h3>
+  <h3 id="this-post-is-for-jail-broken-devices-and-tested-on-ios-812">This post is for Jail Broken devices and tested on IOS 8.1.2.</h3>
 
 <p>This post explains how to retrieve safari history database from a jail broken ios device. Its a sqlite3 database file which contains all history data but the challenge is that there is no specific path on which the files exist, so you will have to first find the files.</p>
 
@@ -74,36 +74,46 @@
 <p>2 Find History.db* files</p>
 
 <p>Application data for most applications reside in subdirectories under:</p>
-<div class="highlight"><pre><code class="language-" data-lang="">/private/var/mobile/Containers/Data/Application/
-</code></pre></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/private/var/mobile/Containers/Data/Application/
+</code></pre></div></div>
 <p>The files which contain safari history data are:</p>
-<div class="highlight"><pre><code class="language-" data-lang="">History.db
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>History.db
 History.db-shm
 History.db-wal
-</code></pre></div>
+</code></pre></div></div>
 <p>To find path to these files just do:</p>
-<div class="highlight"><pre><code class="language-" data-lang="">$ find /private/var/mobile/Containers/Data/Application -iname 'History.db*'
-</code></pre></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ find /private/var/mobile/Containers/Data/Application -iname 'History.db*'
+</code></pre></div></div>
+
 <p>3 SCP files to a local location</p>
 
-<p>Basically to get the data from these files you need <code>sqlite3</code>. You can either install <code>sqlite3</code> app from cydia to the mobile or better just scp the datbase files to machine you are working on.</p>
+<p>Basically to get the data from these files you need <code class="language-plaintext highlighter-rouge">sqlite3</code>. You can either install <code class="language-plaintext highlighter-rouge">sqlite3</code> app from cydia to the mobile or better just scp the datbase files to machine you are working on.</p>
 
-<p>You can copy the files one by one or better use <code>sshpass</code> and <code>xargs</code> to copy all files at one go like:</p>
-<div class="highlight"><pre><code class="language-" data-lang="">$ sshpass -p 'alpine' ssh  root@mobile_ip "find /private/var/mobile/Containers/Data/Application -name 'History.db*'" \
+<p>You can copy the files one by one or better use <code class="language-plaintext highlighter-rouge">sshpass</code> and <code class="language-plaintext highlighter-rouge">xargs</code> to copy all files at one go like:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ sshpass -p 'alpine' ssh  root@mobile_ip "find /private/var/mobile/Containers/Data/Application -name 'History.db*'" \
     | xargs -I{} \
     sshpass -p 'alpine' scp -P $SSH_PORT root@mobile_ip:'{}' /path/to/tmp/db/on/local/machine;
-</code></pre></div>
+</code></pre></div></div>
+
 <p>4 Load the sqlite database</p>
 
-<p>If you change your working directory to the directory containing <code>History.db*</code> files and do:</p>
-<div class="highlight"><pre><code class="language-" data-lang="">$ sqlite3 History.db
-</code></pre></div>
+<p>If you change your working directory to the directory containing <code class="language-plaintext highlighter-rouge">History.db*</code> files and do:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ sqlite3 History.db
+</code></pre></div></div>
+
 <p>It will load sqlite3 database and now you can get any data you want about browser history.</p>
 
 <p>5 Example query to get latest page visited:</p>
-<div class="highlight"><pre><code class="language-" data-lang="">&gt; select url from history_items where id in( select history_item from history_visits order by visit_time desc limit 1);
-</code></pre></div>
-<p>That&#39;s it ! Now you can just play around and get stats like number of times and time when a website was visited and much more.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt; select url from history_items where id in( select history_item from history_visits order by visit_time desc limit 1);
+</code></pre></div></div>
+
+<p>That’s it ! Now you can just play around and get stats like number of times and time when a website was visited and much more.</p>
 
 
 </article>
@@ -122,8 +132,8 @@ History.db-wal
             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
         })();
     </script>
-    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
     
 
       
@@ -132,9 +142,7 @@ History.db-wal
 
       <footer>
           <p>
-          Subscribe to: <a href="/feed.xml" target="_blank">Posts(Atom)</a>
-	  <br/>
-	  No Attributions, It's all yours under <a rel="license" href="http://creativecommons.org/publicdomain/zero/1.0/"> Creative Commons CC0</a>.
+          Thank you, please contact via email
         </p>
       </footer>
     </div>

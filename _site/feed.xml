@@ -1,134 +1,134 @@
 <?xml version="1.0"?>
-<rss version="2.0" xmlns:atom="https://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Pankaj Malhotra</title>
-    <link>https://localhost:4000</link>
-    <atom:link href="https://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
+    <link>http://localhost:4000</link>
+    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
     <description>Pankaj Malhotra aka bitgeeky's blog on Automation, Web QA, Web Development, Algorithms, Coding and his life.</description>
     <language>en-us</language>
-    <pubDate>Thu, 09 Feb 2017 18:06:52 +0530</pubDate>
-    <lastBuildDate>Thu, 09 Feb 2017 18:06:52 +0530</lastBuildDate>
+    <pubDate>Fri, 30 May 2025 18:43:46 -0400</pubDate>
+    <lastBuildDate>Fri, 30 May 2025 18:43:46 -0400</lastBuildDate>
 
     
       <item>
         <title>Redis For HA And Load Balancing Of A Service - Part-2</title>
-        <link>https://localhost:4000/Redis-For-HA-And-Load-Balancing-Of-A-Service-Part-2</link>
-        <pubDate>Sun, 04 Dec 2016 15:38:18 +0530</pubDate>
+        <link>http://localhost:4000/Redis-For-HA-And-Load-Balancing-Of-A-Service-Part-2</link>
+        <pubDate>Sun, 04 Dec 2016 05:08:18 -0500</pubDate>
         <author>Pankaj Malhotra</author>
         <description>&lt;p&gt;In &lt;a href=&quot;https://pankajmalhotra.com/Redis-For-HA-And-Load-Balancing-Of-A-Service-Part-1&quot;&gt;last post&lt;/a&gt; I described the deployment of event data service on a single node.&lt;/p&gt;
 
 &lt;p&gt;Quick Recap:
-&lt;img src=&quot;/public/images/event_data_service_easy_solution.png&quot; alt=&quot;Event Data Service&quot;/&gt;&lt;/p&gt;
+&lt;img src=&quot;/public/images/event_data_service_easy_solution.png&quot; alt=&quot;Event Data Service&quot; /&gt;&lt;/p&gt;
 
-&lt;h2&gt;Easy and unpromising solution&lt;/h2&gt;
-
+&lt;h2 id=&quot;easy-and-unpromising-solution&quot;&gt;Easy and unpromising solution&lt;/h2&gt;
 &lt;p&gt;We use a simple hash map with the following keys and values:&lt;/p&gt;
 
 &lt;ol&gt;
-&lt;li&gt;&lt;code&gt;cumulative_user_event,&amp;lt;product_type&amp;gt;,&amp;lt;event_type&amp;gt;&lt;/code&gt; : &lt;code&gt;(int)(count_of_events)&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;unique_user_event,&amp;lt;product_type&amp;gt;,&amp;lt;event_type&amp;gt;&lt;/code&gt; : &lt;code&gt;(set)(usernames)&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cumulative_user_event,&amp;lt;product_type&amp;gt;,&amp;lt;event_type&amp;gt; &lt;/code&gt; : ` (int)(count_of_events)`&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;unique_user_event,&amp;lt;product_type&amp;gt;,&amp;lt;event_type&amp;gt;&lt;/code&gt; : &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(set)(usernames)&lt;/code&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;Whenever a new message comes we increase the counter for cumulative&lt;em&gt;user&lt;/em&gt;event, and add a username to set corresposnding to unique&lt;em&gt;user&lt;/em&gt;event.
+&lt;p&gt;Whenever a new message comes we increase the counter for cumulative_user_event, and add a username to set corresposnding to unique_user_event.
 Parallely, we run a loop every minute and send the aggregated ouput:
-&lt;code&gt;cumulative_user_event with the counter&lt;/code&gt; and &lt;code&gt;unique_user_event with the cardinality of set&lt;/code&gt;
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cumulative_user_event with the counter&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;unique_user_event with the cardinality of set&lt;/code&gt;
 to database cluster and clear the hash maps.&lt;/p&gt;
 
 &lt;p&gt;We also discussed the problems with above solutions, main problem being when the machine goes down we start losing data and this can happen quite often in a cloud environment.
 But if you observe carefully, deploying on a single machine is not even an option here !&lt;/p&gt;
 
-&lt;h2&gt;Why single machine is not even an option ?&lt;/h2&gt;
-
+&lt;h2 id=&quot;why-single-machine-is-not-even-an-option-&quot;&gt;Why single machine is not even an option ?&lt;/h2&gt;
 &lt;p&gt;Machine-1 and Machine-2 both sit behind a DNS which does a round robin load balancing i.e some requests go to Machine-1 and others go to Machine-2. If we want to deploy our service on one of the machines say Machine-1 we will start losing data which comes on Machine-2.&lt;/p&gt;
 
 &lt;p&gt;The worst idea is to boot up Machine-3 in-between Machine-1 and Machine-2 on which we can deploy our service. After processing data, Machine-3 sends data to databases on both the machines.&lt;/p&gt;
 
 &lt;p&gt;I call it the worst solution because it means, booting up of a machine for just one service, usage of an elastic-ip and a new DNS entry and still the whole system can fail on failure of just one machine.&lt;/p&gt;
 
-&lt;h2&gt;Extending the same solution to multiple machines&lt;/h2&gt;
-
+&lt;h2 id=&quot;extending-the-same-solution-to-multiple-machines&quot;&gt;Extending the same solution to multiple machines&lt;/h2&gt;
 &lt;p&gt;Now, we plan to make this service highly available, so that even if one of the machine for this service goes down our system is not impacted and everything continues to work the same way.&lt;/p&gt;
 
 &lt;p&gt;We deploy our Event Data Service on both Machine-1 and Machine-2 behind a UDP relayer:
-&lt;img src=&quot;/public/images/event_data_service_ha_solution.png&quot; alt=&quot;Event Data Service&quot;/&gt;&lt;/p&gt;
+&lt;img src=&quot;/public/images/event_data_service_ha_solution.png&quot; alt=&quot;Event Data Service&quot; /&gt;&lt;/p&gt;
 
 &lt;ol&gt;
-&lt;li&gt;&lt;p&gt;Whenever request comes to either of Machine-1 or Machine-2 it gets replicated to both the machines by udp replayer. If you observere the picture carefully, there are two arrows from UDP Replayer, one that sends data directly to InfluxDB and the other which sends it to our Event Data Service. This is because the data we want to process is not the only data that our UDP relayer receives, it receives other data also which isn&amp;#39;t of any interest &lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Important point to note here is that the complexity of our UDP replayer has increased now, the dumb relayer which was made to only forward/ broadcast requests is now also processing data and distinguishig which request should directly be sent to database and which one to the Event Data Service.&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Lets call Event Data Service on Macine-1 as EDS-1 and the one on Machine-2 as EDS-2.&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Both EDS-1 and EDS-2 receive same data and start processing it.&lt;/p&gt;&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Whenever request comes to either of Machine-1 or Machine-2 it gets replicated to both the machines by udp replayer. If you observere the picture carefully, there are two arrows from UDP Replayer, one that sends data directly to InfluxDB and the other which sends it to our Event Data Service. This is because the data we want to process is not the only data that our UDP relayer receives, it receives other data also which isn’t of any interest&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Important point to note here is that the complexity of our UDP replayer has increased now, the dumb relayer which was made to only forward/ broadcast requests is now also processing data and distinguishig which request should directly be sent to database and which one to the Event Data Service.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Lets call Event Data Service on Macine-1 as EDS-1 and the one on Machine-2 as EDS-2.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Both EDS-1 and EDS-2 receive same data and start processing it.&lt;/p&gt;
+  &lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h2&gt;Problem with this deployment&lt;/h2&gt;
-
-&lt;p&gt;Important point to note here is that 1 minute for EDS-1 and EDS-2 can be different, i.e the processing time isn&amp;#39;t synchronized.
-Even though the system clocks on both machines are synchronized, i.e &lt;code&gt;date&lt;/code&gt; command on both machines shows same value but:&lt;/p&gt;
+&lt;h2 id=&quot;problem-with-this-deployment&quot;&gt;Problem with this deployment&lt;/h2&gt;
+&lt;p&gt;Important point to note here is that 1 minute for EDS-1 and EDS-2 can be different, i.e the processing time isn’t synchronized.
+Even though the system clocks on both machines are synchronized, i.e &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;date&lt;/code&gt; command on both machines shows same value but:&lt;/p&gt;
 
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;sleep&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;60&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;One minute finished&quot;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+    &lt;span class=&quot;nf&quot;&gt;sleep&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;60&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;One minute finished&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
-&lt;p&gt;When you run this script on both machines independently there is no guarantee that both will always print &amp;quot;One minute finished&amp;quot; at same time. Hence, as shown in picture below the processing time of one minute can overlap or just get out of sync anytime.&lt;/p&gt;
+&lt;p&gt;When you run this script on both machines independently there is no guarantee that both will always print “One minute finished” at same time. Hence, as shown in picture below the processing time of one minute can overlap or just get out of sync anytime.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/public/images/eds_clocks.png&quot; alt=&quot;Event Data Service Easy Solution&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/public/images/eds_clocks.png&quot; alt=&quot;Event Data Service Easy Solution&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;In the overlapping intervals shown in above image same data gets processed twice by both EDS-1 and EDS-2 and we get duplicate/ incosistent data on database which doesn&amp;#39;t makes any sense.&lt;/p&gt;
+&lt;p&gt;In the overlapping intervals shown in above image same data gets processed twice by both EDS-1 and EDS-2 and we get duplicate/ incosistent data on database which doesn’t makes any sense.&lt;/p&gt;
 
-&lt;p&gt;It is clear that both services can&amp;#39;t operate simltaneously, i.e a minute&amp;#39;s data should be processed only once by one of them.&lt;/p&gt;
+&lt;p&gt;It is clear that both services can’t operate simltaneously, i.e a minute’s data should be processed only once by one of them.&lt;/p&gt;
 
-&lt;h2&gt;Solution to above problem:&lt;/h2&gt;
-
-&lt;p&gt;This problem is actaully one of the most common problem of a Distributed System and hence has a number of solutions to it, I&amp;#39;ll describe one of them here:&lt;/p&gt;
+&lt;h2 id=&quot;solution-to-above-problem&quot;&gt;Solution to above problem:&lt;/h2&gt;
+&lt;p&gt;This problem is actaully one of the most common problem of a Distributed System and hence has a number of solutions to it, I’ll describe one of them here:&lt;/p&gt;
 
 &lt;ol&gt;
-&lt;li&gt;Master-Slave architecture: We use only one of {EDS-1, EDS-2} at a given point of time. Both nodes send each other periodic heart beats and one of them takes over as a master node for processing the data.
+  &lt;li&gt;Master-Slave architecture: We use only one of {EDS-1, EDS-2} at a given point of time. Both nodes send each other periodic heart beats and one of them takes over as a master node for processing the data.
 If EDS-1 goes down EDS-2 will take over and vice-versa.&lt;/li&gt;
 &lt;/ol&gt;
 
 &lt;p&gt;This ensures HA of our service ! Yes, now our service is highly available, because same logic can be scaled horizontally to add more nodes, for 3 or more node cluster.&lt;/p&gt;
 
-&lt;h2&gt;Steps towards a scalable design and Load Balancing&lt;/h2&gt;
-
+&lt;h2 id=&quot;steps-towards-a-scalable-design-and-load-balancing&quot;&gt;Steps towards a scalable design and Load Balancing&lt;/h2&gt;
 &lt;p&gt;If you think carefully, in our solution only one of the service out of {EDS-1, EDS-2} is processing data, the other one is sitting idle and just sending heart beats.&lt;/p&gt;
 
 &lt;p&gt;We can modify our service and design it in such a way that the load of data processing can be distributed among the active nodes so that in future if the volume of data will increase our system can be scaled by simply adding more number of nodes and keeping architecture and implementation the same. Computing power of a single node in previous solution can become a bottle neck, the new solution should also remove any such bottle necks from our system.&lt;/p&gt;
 
-&lt;h2&gt;Taking advantage of Redis and NTP time:&lt;/h2&gt;
+&lt;h2 id=&quot;taking-advantage-of-redis-and-ntp-time&quot;&gt;Taking advantage of Redis and NTP time:&lt;/h2&gt;
+&lt;p&gt;Now try to think of the problen yourself again, you’ll realize that from very begining all we needed was just a memory which is shared by both machines and is always same for both.
+That is the data once taken by EDS-1 shouldn’t be taken again by EDS-2, and since we need an aggregate over one minute we can take advantage of system time, the one shown by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;date&lt;/code&gt; command since that will be same on both machines ! It gets synchronized via NTP client no matter what geographical area the nodes are in.&lt;/p&gt;
 
-&lt;p&gt;Now try to think of the problen yourself again, you&amp;#39;ll realize that from very begining all we needed was just a memory which is shared by both machines and is always same for both.
-That is the data once taken by EDS-1 shouldn&amp;#39;t be taken again by EDS-2, and since we need an aggregate over one minute we can take advantage of system time, the one shown by &lt;code&gt;date&lt;/code&gt; command since that will be same on both machines ! It gets synchronized via NTP client no matter what geographical area the nodes are in.&lt;/p&gt;
-
-&lt;h2&gt;Final Solution&lt;/h2&gt;
-
-&lt;p&gt;To keep track of clock time we define our 0 point as mid night and all the minutes after that have an abolute value, which can also be defined as &lt;code&gt;minutes_since_midnight&lt;/code&gt;.
-The value of &lt;code&gt;minutes_since_midnight&lt;/code&gt; will be same on both machines since both are synchronized by NTP.&lt;/p&gt;
+&lt;h2 id=&quot;final-solution&quot;&gt;Final Solution&lt;/h2&gt;
+&lt;p&gt;To keep track of clock time we define our 0 point as mid night and all the minutes after that have an abolute value, which can also be defined as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;minutes_since_midnight&lt;/code&gt;.
+The value of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;minutes_since_midnight&lt;/code&gt; will be same on both machines since both are synchronized by NTP.&lt;/p&gt;
 
 &lt;p&gt;We keep 1 sorted set and 3 unsorted sets in Redis:&lt;/p&gt;
 
 &lt;ol&gt;
-&lt;li&gt;Sorted set &amp;quot;minutes&amp;quot; - stores minutes&lt;em&gt;since&lt;/em&gt;midnight values.&lt;/li&gt;
-&lt;li&gt;Unsorted set &amp;quot;&lt;minutes_since_midnight&gt;&lt;em&gt;event&lt;/em&gt;types&amp;quot; - contains types of events that happened for a particular product in a particular minutes&lt;em&gt;since&lt;/em&gt;midnight.&lt;/li&gt;
-&lt;li&gt;Unsorted set &amp;quot;&lt;minutes_since_midnight&gt;&lt;em&gt;unique&lt;/em&gt;user&lt;em&gt;&amp;lt;event&lt;/em&gt;type&lt;em&gt;for&lt;/em&gt;a_product&amp;gt;&amp;quot; - contains usernames for which the event happened.&lt;/li&gt;
-&lt;li&gt;Unsorted set &amp;quot;&lt;minutes_since_midnight&gt;&lt;em&gt;cumulative&lt;/em&gt;user&lt;em&gt;&amp;lt;event&lt;/em&gt;type&lt;em&gt;for&lt;/em&gt;a_product&amp;gt;&amp;quot; - contains usernames + timestamp for which the event happened.&lt;/li&gt;
+  &lt;li&gt;Sorted set “minutes” - stores minutes_since_midnight values.&lt;/li&gt;
+  &lt;li&gt;Unsorted set “&lt;minutes_since_midnight&gt;_event_types&quot; - contains types of events that happened for a particular product in a particular minutes_since_midnight.&lt;/minutes_since_midnight&gt;&lt;/li&gt;
+  &lt;li&gt;Unsorted set “&lt;minutes_since_midnight&gt;_unique_user_&lt;event_type_for_a_product&gt;&quot; - contains usernames for which the event happened.&lt;/event_type_for_a_product&gt;&lt;/minutes_since_midnight&gt;&lt;/li&gt;
+  &lt;li&gt;Unsorted set “&lt;minutes_since_midnight&gt;_cumulative_user_&lt;event_type_for_a_product&gt;&quot; - contains usernames + timestamp for which the event happened.&lt;/event_type_for_a_product&gt;&lt;/minutes_since_midnight&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
 &lt;p&gt;When the events for a product type comes:
-Add minutes&lt;em&gt;since&lt;/em&gt;midnight to a set &amp;quot;minutes&amp;quot; with a weight equal to the value.&lt;/p&gt;
+Add minutes_since_midnight to a set “minutes” with a weight equal to the value.&lt;/p&gt;
 
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;n&quot;&gt;ZADD&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'minutes'&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minutes_since_midnight&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minutes_since_midnight&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;n&quot;&gt;ZADD&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;minutes&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&apos;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minutes_since_midnight&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minutes_since_midnight&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
 &lt;p&gt;Even if both machines push the same value multiples time, we are sure that there is only a single entry.&lt;/p&gt;
 
 &lt;p&gt;Keep track of all the events happened for a product in a particular minute:&lt;/p&gt;
 
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;n&quot;&gt;SADD&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minutes_since_midnight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'event_types'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;event_type_val&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;product&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;n&quot;&gt;SADD&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minutes_since_midnight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;event_types&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;event_type_val&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;product&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
 &lt;p&gt;Since, this is also a set, it ensures each type of event for a product gets pushed only once.&lt;/p&gt;
 
-&lt;p&gt;Preappend &lt;code&gt;minutes_since_midnight&lt;/code&gt; to each event type to create a set so that we 
+&lt;p&gt;Preappend &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;minutes_since_midnight&lt;/code&gt; to each event type to create a set so that we 
 can later get to know the events which came in a particular minute for a particular product:&lt;/p&gt;
 
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;n&quot;&gt;SADD&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minutes_since_midnight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'unique_user,'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;event_type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;username&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;n&quot;&gt;SADD&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minutes_since_midnight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;unique_user,&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;event_type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;username&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
 &lt;p&gt;We store the usernames in this set, the cardinality of this set will later give us the
 number of users for which a particular event happened for a particular product.&lt;/p&gt;
@@ -137,7 +137,7 @@ number of users for which a particular event happened for a particular product.&
 we also add a timestamp appended to the username in this set, this is done to differentiate
 between two events which happened at two different times but within same minute.&lt;/p&gt;
 
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;n&quot;&gt;SADD&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minutes_since_midnight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'cumulative_events,'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;event_type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;username&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;+&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;timestamp&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;n&quot;&gt;SADD&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minutes_since_midnight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;cumulative_events,&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;event_type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;username&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;+&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;timestamp&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
 &lt;p&gt;And since this is a set, even if EDS-1 and EDS-2 push the same event, it will get stored only once.&lt;/p&gt;
 
@@ -153,44 +153,43 @@ Consider the same input as in previous example.&lt;/p&gt;
 &lt;p&gt;The above events happen within same minute as indicated by timestamp in nanoseconds.
 If we calculate the minutes since midnight for the above events it will be 1118.&lt;/p&gt;
 
-&lt;p&gt;Now, value of minutes&lt;em&gt;since&lt;/em&gt;midnight = 1118
+&lt;p&gt;Now, value of minutes_since_midnight = 1118
 other datastructures in Redis will have the values:&lt;/p&gt;
 
 &lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;n&quot;&gt;minutes&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,}&lt;/span&gt;
-&lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_event_types&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;event_type=http-5xx,product=productA&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;s&quot;&gt;&quot;event_type=os_error,product=productA&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;s&quot;&gt;&quot;event_type=browser_error,product=productB&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_event_types&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;event_type=http-5xx,product=productA&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;event_type=os_error,product=productA&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;event_type=browser_error,product=productB&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 
 &lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_unique_user_event_type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;http&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;xx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;product&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;productA&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;testusername1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_unique_user_event_type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;os_error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;product&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;productA&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;testusername2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_unique_user_event_type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;browser_error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;product&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;productB&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; \
-                       &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;testusername3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;testusername4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+					   &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;testusername3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;testusername4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 
 &lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_cumulative_user_event_type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;http&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;xx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;product&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;productA&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; \
   &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;testusername1_1480876707352348928&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;testusername1_1480876707352348930&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_cumulative_user_event_type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;os_error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;product&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;productA&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;
-                     &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;testusername2_1480876707352348928&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+				     &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;testusername2_1480876707352348928&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_cumulative_user_event_type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;browser_error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;product&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;productB&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; 
-                     &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;testusername3_1480876707352348928&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+				     &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;testusername3_1480876707352348928&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
-&lt;h2&gt;Service operation on Redis data&lt;/h2&gt;
-
-&lt;p&gt;Both EDS-1 and EDS-2 start poping out an element form the &amp;quot;minute&amp;quot; set, this make sure if EDS-1 gets minute value of 1118
+&lt;h2 id=&quot;service-operation-on-redis-data&quot;&gt;Service operation on Redis data&lt;/h2&gt;
+&lt;p&gt;Both EDS-1 and EDS-2 start poping out an element form the “minute” set, this make sure if EDS-1 gets minute value of 1118
 it gets deleted from the set and EDS-2 can never get that value.&lt;/p&gt;
 
-&lt;p&gt;Assuming that EDS-1 gets the minute 1118 to be processed it will iterate over the event types of &lt;code&gt;1118_event_types&lt;/code&gt;
+&lt;p&gt;Assuming that EDS-1 gets the minute 1118 to be processed it will iterate over the event types of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1118_event_types&lt;/code&gt;
 and get cardinality of each set corresponding to the event.&lt;/p&gt;
 
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;n&quot;&gt;min_since_midnight&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pop_from_redis_set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;minutes&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;n&quot;&gt;min_since_midnight&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;pop_from_redis_set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;minutes&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
 
-&lt;span class=&quot;c&quot;&gt;# value of minutes_since_midnight = 1118&lt;/span&gt;
-
+&lt;span class=&quot;c1&quot;&gt;# value of minutes_since_midnight = 1118
+&lt;/span&gt;
 &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;event_tpe&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_event_types&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;get_cadinallity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_unique_user_event_type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;get_cadinallity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_cumulative_user_event_type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;delete_from_redis&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_unique_user_event_type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;delete_from_redis&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_cumulative_user_event_type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;delete_from_redis&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_event_tpes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+    &lt;span class=&quot;nf&quot;&gt;get_cadinallity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_unique_user_event_type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;nf&quot;&gt;get_cadinallity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_cumulative_user_event_type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;nf&quot;&gt;delete_from_redis&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_unique_user_event_type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;nf&quot;&gt;delete_from_redis&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_cumulative_user_event_type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;nf&quot;&gt;delete_from_redis&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1118&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_event_tpes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
 &lt;p&gt;This will give us the desired output:&lt;/p&gt;
 
@@ -203,9 +202,9 @@ and get cardinality of each set corresponding to the event.&lt;/p&gt;
 
 &lt;p&gt;Final Architecture:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/public/images/final_event_data_service.png&quot; alt=&quot;Event Data Service&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/public/images/final_event_data_service.png&quot; alt=&quot;Event Data Service&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;That&amp;#39;s it ! Now we have a highly available load balanced service which can be deployed on a cluster of more than two nodes.&lt;/p&gt;
+&lt;p&gt;That’s it ! Now we have a highly available load balanced service which can be deployed on a cluster of more than two nodes.&lt;/p&gt;
 
 &lt;p&gt;Feel, free to get in touch of you have a better design or want to discuss more on this.&lt;/p&gt;
 </description>
@@ -213,31 +212,30 @@ and get cardinality of each set corresponding to the event.&lt;/p&gt;
     
       <item>
         <title>Redis For HA And Load Balancing Of A Service - Part-1</title>
-        <link>https://localhost:4000/Redis-For-HA-And-Load-Balancing-Of-A-Service-Part-1</link>
-        <pubDate>Sat, 12 Nov 2016 14:07:59 +0530</pubDate>
+        <link>http://localhost:4000/Redis-For-HA-And-Load-Balancing-Of-A-Service-Part-1</link>
+        <pubDate>Sat, 12 Nov 2016 03:37:59 -0500</pubDate>
         <author>Pankaj Malhotra</author>
         <description>&lt;p&gt;Its been long since I have written a blog post, mostly because of my busy schedule and new life after University.
-A lot has happened since then, about which I plan to write seperate blog posts. &lt;/p&gt;
+A lot has happened since then, about which I plan to write seperate blog posts.&lt;/p&gt;
 
-&lt;p&gt;I have been working with the DevOps team at &lt;a href=&quot;https://browserstack.com/&quot;&gt;BrowserStack&lt;/a&gt; for a few months now. In this post I&amp;#39;ll describe an interesting problem I have been working on recently.&lt;/p&gt;
+&lt;p&gt;I have been working with the DevOps team at &lt;a href=&quot;http://browserstack.com/&quot;&gt;BrowserStack&lt;/a&gt; for a few months now. In this post I’ll describe an interesting problem I have been working on recently.&lt;/p&gt;
 
-&lt;h2&gt;Problem&lt;/h2&gt;
-
+&lt;h2 id=&quot;problem&quot;&gt;Problem&lt;/h2&gt;
 &lt;p&gt;Writing a highly available/ multi AZ service deployed independently in each region which does aggregation of data in fixed time intervals and pushes to a database cluster.&lt;/p&gt;
 
 &lt;p&gt;Lets first look and try to understand the given architecture:
-&lt;img src=&quot;/public/images/event_data_service.png&quot; alt=&quot;Event Data Service&quot;/&gt;&lt;/p&gt;
+&lt;img src=&quot;/public/images/event_data_service.png&quot; alt=&quot;Event Data Service&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;In the above architecture we have:&lt;/p&gt;
 
 &lt;ol&gt;
-&lt;li&gt;Multiple Services and Products all in same region. For example: us-east&lt;/li&gt;
-&lt;li&gt;All services communicate with database servers via DNS which provides round robin load balancing.&lt;/li&gt;
-&lt;li&gt;Machine-1 and Machine-2 both have exact same configuration and services - UDP broadcast relayer and InfluxDB in two availability zones. For example: us-east-1a and us-east-1b&lt;/li&gt;
-&lt;li&gt;If a request from any of the productA, productB etc hits our DNS it can be redirected to either Machine-1 or Machine-2.&lt;/li&gt;
-&lt;li&gt;UDP relayer make sure that both databases contain the same data, i.e if a request comes on Machine-1 it is automatically sent to Machine-2 and vice versa.&lt;/li&gt;
-&lt;li&gt;Each product sends the database cluster an event message whenever a user event happens on it.&lt;/li&gt;
-&lt;li&gt;The message contains 4 parameters (event-type, product, username, timestamp).&lt;/li&gt;
+  &lt;li&gt;Multiple Services and Products all in same region. For example: us-east&lt;/li&gt;
+  &lt;li&gt;All services communicate with database servers via DNS which provides round robin load balancing.&lt;/li&gt;
+  &lt;li&gt;Machine-1 and Machine-2 both have exact same configuration and services - UDP broadcast relayer and InfluxDB in two availability zones. For example: us-east-1a and us-east-1b&lt;/li&gt;
+  &lt;li&gt;If a request from any of the productA, productB etc hits our DNS it can be redirected to either Machine-1 or Machine-2.&lt;/li&gt;
+  &lt;li&gt;UDP relayer make sure that both databases contain the same data, i.e if a request comes on Machine-1 it is automatically sent to Machine-2 and vice versa.&lt;/li&gt;
+  &lt;li&gt;Each product sends the database cluster an event message whenever a user event happens on it.&lt;/li&gt;
+  &lt;li&gt;The message contains 4 parameters (event-type, product, username, timestamp).&lt;/li&gt;
 &lt;/ol&gt;
 
 &lt;p&gt;Event message examples:&lt;/p&gt;
@@ -253,7 +251,7 @@ A lot has happened since then, about which I plan to write seperate blog posts. 
 &lt;p&gt;Consider the following use case:&lt;/p&gt;
 
 &lt;ol&gt;
-&lt;li&gt;For instrumentation purpose, we need to count the total number of particular event types(eg: http-5xx, browser_error, etc) which happened for a particular product(eg: productA, productB) per minute and also get the same count for unique users.&lt;/li&gt;
+  &lt;li&gt;For instrumentation purpose, we need to count the total number of particular event types(eg: http-5xx, browser_error, etc) which happened for a particular product(eg: productA, productB) per minute and also get the same count for unique users.&lt;/li&gt;
 &lt;/ol&gt;
 
 &lt;p&gt;According to the given use case the above 5 example messages will yield an output:&lt;/p&gt;
@@ -265,78 +263,72 @@ cumulative_user_event,event_type&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;os
 unique_user_event,event_type&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;browser_error,product&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;productB &lt;span class=&quot;nv&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;2
 cumulative_user_event,event_type&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;browser_error,product&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;productB &lt;span class=&quot;nv&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;2&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 
-&lt;h2&gt;Understanding the above output&lt;/h2&gt;
+&lt;h2 id=&quot;understanding-the-above-output&quot;&gt;Understanding the above output&lt;/h2&gt;
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cumulative_user_event&lt;/code&gt; tag describes events which happened within one minute for a particular product, i.e if an event happened for testuser1 two times within a minute it will be counted two times. On the other hand&lt;/p&gt;
 
-&lt;p&gt;&lt;code&gt;cumulative_user_event&lt;/code&gt; tag describes events which happened within one minute for a particular product, i.e if an event happened for testuser1 two times within a minute it will be counted two times. On the other hand&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;unique_user_event&lt;/code&gt; tag describes events which happened within one minute for a particular product, considering unique users only, i.e if an event happened for testuser1 two times within a minute it will be counted once only.&lt;/p&gt;
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;unique_user_event&lt;/code&gt; tag describes events which happened within one minute for a particular product, considering unique users only, i.e if an event happened for testuser1 two times within a minute it will be counted once only.&lt;/p&gt;
 
 &lt;ol&gt;
-&lt;li&gt;The first output message says: Within a duration of 1 minute the product &lt;code&gt;productA&lt;/code&gt; gave &lt;code&gt;http-5xx&lt;/code&gt; to 1 user only.&lt;/li&gt;
-&lt;li&gt;The second output message says: Within a duration of 1 minute the product &lt;code&gt;productA&lt;/code&gt; gave &lt;code&gt;http-5xx&lt;/code&gt; 2 times.&lt;/li&gt;
-&lt;li&gt;The third output message says: Within a duration of 1 minute the product &lt;code&gt;productA&lt;/code&gt; gave &lt;code&gt;os_error&lt;/code&gt; to 1 user only.&lt;/li&gt;
-&lt;li&gt;The fourth output message says: Within a duration of 1 minute the product &lt;code&gt;productA&lt;/code&gt; gave &lt;code&gt;os_error&lt;/code&gt; 1 time only.&lt;/li&gt;
-&lt;li&gt;The fifth output message says: Within a duration of 1 minute the product &lt;code&gt;productB&lt;/code&gt; gave &lt;code&gt;browser_error&lt;/code&gt; to 2 users.&lt;/li&gt;
-&lt;li&gt;The sixth output message says: Within a duration of 1 minute the product &lt;code&gt;productB&lt;/code&gt; gave &lt;code&gt;browser_error&lt;/code&gt; 2 times.&lt;/li&gt;
+  &lt;li&gt;The first output message says: Within a duration of 1 minute the product &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;productA&lt;/code&gt; gave &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;http-5xx&lt;/code&gt; to 1 user only.&lt;/li&gt;
+  &lt;li&gt;The second output message says: Within a duration of 1 minute the product &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;productA&lt;/code&gt; gave &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;http-5xx&lt;/code&gt; 2 times.&lt;/li&gt;
+  &lt;li&gt;The third output message says: Within a duration of 1 minute the product &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;productA&lt;/code&gt; gave &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;os_error&lt;/code&gt; to 1 user only.&lt;/li&gt;
+  &lt;li&gt;The fourth output message says: Within a duration of 1 minute the product &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;productA&lt;/code&gt; gave &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;os_error&lt;/code&gt; 1 time only.&lt;/li&gt;
+  &lt;li&gt;The fifth output message says: Within a duration of 1 minute the product &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;productB&lt;/code&gt; gave &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;browser_error&lt;/code&gt; to 2 users.&lt;/li&gt;
+  &lt;li&gt;The sixth output message says: Within a duration of 1 minute the product &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;productB&lt;/code&gt; gave &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;browser_error&lt;/code&gt; 2 times.&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h2&gt;Service Requirements&lt;/h2&gt;
+&lt;h2 id=&quot;service-requirements&quot;&gt;Service Requirements&lt;/h2&gt;
+&lt;p&gt;Let’s call the above example messages as input, the output yield as output and the service to be implemented as Event Data Service.
+It should be pretty clear by now that we need to write a service which takes in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;input&lt;/code&gt; from multiple products and sends &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;output&lt;/code&gt; to the database cluster.&lt;/p&gt;
 
-&lt;p&gt;Let&amp;#39;s call the above example messages as input, the output yield as output and the service to be implemented as Event Data Service.
-It should be pretty clear by now that we need to write a service which takes in the &lt;code&gt;input&lt;/code&gt; from multiple products and sends &lt;code&gt;output&lt;/code&gt; to the database cluster.&lt;/p&gt;
-
-&lt;h2&gt;Easy and unpromising solution&lt;/h2&gt;
-
+&lt;h2 id=&quot;easy-and-unpromising-solution&quot;&gt;Easy and unpromising solution&lt;/h2&gt;
 &lt;p&gt;We use a simple hash map with the following keys and values:&lt;/p&gt;
 
 &lt;ol&gt;
-&lt;li&gt;&lt;code&gt;cumulative_user_event,&amp;lt;product_type&amp;gt;,&amp;lt;event_type&amp;gt;&lt;/code&gt; : &lt;code&gt;(int)(count_of_events)&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;unique_user_event,&amp;lt;product_type&amp;gt;,&amp;lt;event_type&amp;gt;&lt;/code&gt; : &lt;code&gt;(set)(usernames)&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cumulative_user_event,&amp;lt;product_type&amp;gt;,&amp;lt;event_type&amp;gt; &lt;/code&gt; : ` (int)(count_of_events)`&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;unique_user_event,&amp;lt;product_type&amp;gt;,&amp;lt;event_type&amp;gt;&lt;/code&gt; : &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(set)(usernames)&lt;/code&gt;&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;Whenever a new message comes we increase the counter for cumulative&lt;em&gt;user&lt;/em&gt;event, and add a username to set corresposnding to unique&lt;em&gt;user&lt;/em&gt;event.
+&lt;p&gt;Whenever a new message comes we increase the counter for cumulative_user_event, and add a username to set corresposnding to unique_user_event.
 Parallely, we run a loop every minute and send the aggregated ouput:
-&lt;code&gt;cumulative_user_event with the counter and unique_user_event with the cardinality of set&lt;/code&gt;
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cumulative_user_event with the counter and unique_user_event with the cardinality of set&lt;/code&gt;
 to database cluster and clear the hash maps.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/public/images/event_data_service_easy_solution.png&quot; alt=&quot;Event Data Service Easy Solution&quot;/&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/public/images/event_data_service_easy_solution.png&quot; alt=&quot;Event Data Service Easy Solution&quot; /&gt;&lt;/p&gt;
 
-&lt;h2&gt;Problems with above solution&lt;/h2&gt;
-
+&lt;h2 id=&quot;problems-with-above-solution&quot;&gt;Problems with above solution&lt;/h2&gt;
 &lt;p&gt;The above solution works perfectly fine when deployed on a single machine as a service, but deploying the service on a single node makes it a single point of failure for our complete system, i.e even though we have HA for our database but whenever the node containing Event Data Service crashes, all our database servers stop receiving data.&lt;/p&gt;
 
 &lt;p&gt;If you observe carefully, in this solution we can simply deploy the service on Machine-1 or Machine-2 and just point our DNS to one of them with deployed service. It will disable our HA and when the server pointed by DNS crashes whole of our system will crash.&lt;/p&gt;
 
-&lt;h2&gt;Deploying Event Data Service on multiple machines&lt;/h2&gt;
-
+&lt;h2 id=&quot;deploying-event-data-service-on-multiple-machines&quot;&gt;Deploying Event Data Service on multiple machines&lt;/h2&gt;
 &lt;p&gt;This is the actual solution for our problem and the main reason of this blog post, i.e we want to deploy our Event Data Service both on Machine-1 and Machine-2.&lt;/p&gt;
 
-&lt;h2&gt;Challenges and Brainstorming&lt;/h2&gt;
-
-&lt;p&gt;I&amp;#39;ll describe solution for how to achieve this in my next post i.e Part-2 of this series but I&amp;#39;ll leave some interesting hints for reader to brainstorm on:&lt;/p&gt;
+&lt;h2 id=&quot;challenges-and-brainstorming&quot;&gt;Challenges and Brainstorming&lt;/h2&gt;
+&lt;p&gt;I’ll describe solution for how to achieve this in my next post i.e Part-2 of this series but I’ll leave some interesting hints for reader to brainstorm on:&lt;/p&gt;
 
 &lt;p&gt;When Event Data Service gets deployed to both Machine-1 and Machine-2, DNS points to both the machines and does regular round robin load balancing:&lt;/p&gt;
 
 &lt;ol&gt;
-&lt;li&gt;Which machine gets the event messages from products ?&lt;/li&gt;
-&lt;li&gt;When does that machine gets the message ?&lt;/li&gt;
-&lt;li&gt;Which machine processes and pushes data and at what intervals ?&lt;/li&gt;
-&lt;li&gt;Does the one minute loop finish at same time on both machines ?&lt;/li&gt;
-&lt;li&gt;What is the title of this post ? :)&lt;/li&gt;
+  &lt;li&gt;Which machine gets the event messages from products ?&lt;/li&gt;
+  &lt;li&gt;When does that machine gets the message ?&lt;/li&gt;
+  &lt;li&gt;Which machine processes and pushes data and at what intervals ?&lt;/li&gt;
+  &lt;li&gt;Does the one minute loop finish at same time on both machines ?&lt;/li&gt;
+  &lt;li&gt;What is the title of this post ? :)&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;Until then keep thinking and stay tuned. Feel free to discuss the possible solution with me in the meantime or ask questions if you couldn&amp;#39;t get the problem statement clearly.&lt;/p&gt;
+&lt;p&gt;Until then keep thinking and stay tuned. Feel free to discuss the possible solution with me in the meantime or ask questions if you couldn’t get the problem statement clearly.&lt;/p&gt;
 </description>
       </item>
     
       <item>
         <title>Making My GSoC 2014 Project Proposal Public</title>
-        <link>https://localhost:4000/Making-My-GSoC-2014-Project-Proposal-Public</link>
-        <pubDate>Mon, 21 Mar 2016 04:56:12 +0530</pubDate>
+        <link>http://localhost:4000/Making-My-GSoC-2014-Project-Proposal-Public</link>
+        <pubDate>Sun, 20 Mar 2016 19:26:12 -0400</pubDate>
         <author>Pankaj Malhotra</author>
         <description>&lt;p&gt;Many of my juniors are applying for Google Summer of Code this year, and I have been giving them few tips on how to write a good proposal. I decided to make my own proposal public so that anyone who wants to get some hints can go through it. I spent a lot of time writing this proposal and I am thankful to my project mentor and team manager for their helpful quality reviews.&lt;/p&gt;
 
-&lt;p&gt;Although this proposal is two years old since I applied in 2014, but most of the points will still be useful since there hasn&amp;#39;t been much change in program since then.&lt;/p&gt;
+&lt;p&gt;Although this proposal is two years old since I applied in 2014, but most of the points will still be useful since there hasn’t been much change in program since then.&lt;/p&gt;
 
 &lt;iframe src=&quot;https://drive.google.com/file/d/0B49J04vfEogldmpoMjZOdlVqcFE/preview&quot; width=&quot;100%&quot; height=&quot;900&quot;&gt;&lt;/iframe&gt;
 </description>
@@ -344,102 +336,80 @@ to database cluster and clear the hash maps.&lt;/p&gt;
     
       <item>
         <title>Dynamic Resource Management in IaaS Cloud</title>
-        <link>https://localhost:4000/Dynamic-Resource-Management-in-IaaS-Cloud</link>
-        <pubDate>Thu, 17 Dec 2015 20:30:00 +0530</pubDate>
+        <link>http://localhost:4000/Dynamic-Resource-Management-in-IaaS-Cloud</link>
+        <pubDate>Thu, 17 Dec 2015 10:00:00 -0500</pubDate>
         <author>Pankaj Malhotra</author>
         <description>&lt;p&gt;Few months back, I started working on a problem to dynamically manage resources in an Infrastructure as a Service platform, I wanted to build a model that would scale infrastrcuture based on application needs, and would help to reduce the cost and resource over utilization for the infrastructure provider and make the application robust by providing right amount of resources at the right time.&lt;/p&gt;
 
 &lt;p&gt;Due to academic workload and deadlines I had to shift my focus and adjust my priorities, thus moving away from the project. I am not entirely sure if and when I will be able to get back to this project, so I am making my research, explorations and experiments public in form of a summary/report, so that someone else working on the same problem would be able to make good use of my study and can continue from the point where I left.&lt;/p&gt;
 
-&lt;script async class=&quot;speakerdeck-embed&quot; data-id=&quot;6ee5dbc85fe94574bb6ce9f42dbb0b44&quot; data-ratio=&quot;0.772830188679245&quot; src=&quot;//speakerdeck.com/assets/embed.js&quot;&gt;&lt;/script&gt;
+&lt;script async=&quot;&quot; class=&quot;speakerdeck-embed&quot; data-id=&quot;6ee5dbc85fe94574bb6ce9f42dbb0b44&quot; data-ratio=&quot;0.772830188679245&quot; src=&quot;//speakerdeck.com/assets/embed.js&quot;&gt;&lt;/script&gt;
+
 </description>
       </item>
     
       <item>
         <title>JSFoo 2015 Conference and Workshops on JavaScript</title>
-        <link>https://localhost:4000/JSFoo-2015-Conference-and-Workshops-on-JavaScript</link>
-        <pubDate>Fri, 18 Sep 2015 06:14:52 +0530</pubDate>
+        <link>http://localhost:4000/JSFoo-2015-Conference-and-Workshops-on-JavaScript</link>
+        <pubDate>Thu, 17 Sep 2015 20:44:52 -0400</pubDate>
         <author>Pankaj Malhotra</author>
-        <description>&lt;h2&gt;Enjoying weather sitting outside airport&lt;/h2&gt;
+        <description>&lt;h2 id=&quot;enjoying-weather-sitting-outside-airport&quot;&gt;Enjoying weather sitting outside airport&lt;/h2&gt;
+&lt;h5 id=&quot;friday-2015-09-20&quot;&gt;Friday 2015-09-20&lt;/h5&gt;
+&lt;p&gt;Sitting outside airport, having a cup of tea. It’s still raining, weather is really good. I have started feeling a little bit cold now. I really like this kind of a place, seeing people passing by, some are coming, some are leaving and some sitting beside me filling their appetite, all kind of people from different age groups.&lt;/p&gt;
 
-&lt;h5&gt;Friday 2015-09-20&lt;/h5&gt;
-
-&lt;p&gt;Sitting outside airport, having a cup of tea. It&amp;#39;s still raining, weather is really good. I have started feeling a little bit cold now. I really like this kind of a place, seeing people passing by, some are coming, some are leaving and some sitting beside me filling their appetite, all kind of people from different age groups.&lt;/p&gt;
-
-&lt;h2&gt;It started raining&lt;/h2&gt;
-
-&lt;h5&gt;Friday 2015-09-20&lt;/h5&gt;
-
+&lt;h2 id=&quot;it-started-raining&quot;&gt;It started raining&lt;/h2&gt;
+&lt;h5 id=&quot;friday-2015-09-20-1&quot;&gt;Friday 2015-09-20&lt;/h5&gt;
 &lt;p&gt;It has started raining now, planning to leave for airport.
 &lt;img src=&quot;https://i.imgur.com/dsg28Kj.jpg&quot; alt=&quot;It started raining&quot; /&gt;&lt;/p&gt;
 
-&lt;h2&gt;Tikki Tikki&lt;/h2&gt;
-
-&lt;h5&gt;Friday 2015-09-20&lt;/h5&gt;
-
-&lt;p&gt;We had to checkout at 12 pm. Left the hotel to explore city, having some snacks at a place called Tikki Tikki, it&amp;#39;s a snack made of pita bread pocket filled with cutlet, veggies and some tasty sauces.
+&lt;h2 id=&quot;tikki-tikki&quot;&gt;Tikki Tikki&lt;/h2&gt;
+&lt;h5 id=&quot;friday-2015-09-20-2&quot;&gt;Friday 2015-09-20&lt;/h5&gt;
+&lt;p&gt;We had to checkout at 12 pm. Left the hotel to explore city, having some snacks at a place called Tikki Tikki, it’s a snack made of pita bread pocket filled with cutlet, veggies and some tasty sauces.
 &lt;img src=&quot;https://i.imgur.com/Fub28DE.jpg&quot; alt=&quot;Tikki Tikki&quot; /&gt;&lt;/p&gt;
 
-&lt;h2&gt;We are in a Book Fair&lt;/h2&gt;
-
-&lt;h5&gt;Friday 2015-09-20&lt;/h5&gt;
-
-&lt;p&gt;Looks like my idea of exploring the city is working out well. I just saw a banner titled Book Fair, and didn&amp;#39;t take a moment to go inside.
+&lt;h2 id=&quot;we-are-in-a-book-fair&quot;&gt;We are in a Book Fair&lt;/h2&gt;
+&lt;h5 id=&quot;friday-2015-09-20-3&quot;&gt;Friday 2015-09-20&lt;/h5&gt;
+&lt;p&gt;Looks like my idea of exploring the city is working out well. I just saw a banner titled Book Fair, and didn’t take a moment to go inside.
 &lt;img src=&quot;https://i.imgur.com/54Du7uB.jpg&quot; alt=&quot;We are in a Book Fair&quot; /&gt;&lt;/p&gt;
 
-&lt;h2&gt;Getting ready for the day&lt;/h2&gt;
-
-&lt;h5&gt;Friday 2015-09-20&lt;/h5&gt;
-
-&lt;p&gt;I am planning to explore the city, and skipping NodeBots &amp;amp; JS Hardware Workshop. I hope I don&amp;#39;t regret it later.
+&lt;h2 id=&quot;getting-ready-for-the-day&quot;&gt;Getting ready for the day&lt;/h2&gt;
+&lt;h5 id=&quot;friday-2015-09-20-4&quot;&gt;Friday 2015-09-20&lt;/h5&gt;
+&lt;p&gt;I am planning to explore the city, and skipping NodeBots &amp;amp; JS Hardware Workshop. I hope I don’t regret it later.
 &lt;img src=&quot;https://i.imgur.com/yT5rbzs.jpg&quot; alt=&quot;Getting ready for the day&quot; /&gt;&lt;/p&gt;
 
-&lt;h2&gt;Guillermo Rauch live on stage&lt;/h2&gt;
-
-&lt;h5&gt;Friday 2015-09-19&lt;/h5&gt;
-
+&lt;h2 id=&quot;guillermo-rauch-live-on-stage&quot;&gt;Guillermo Rauch live on stage&lt;/h2&gt;
+&lt;h5 id=&quot;friday-2015-09-19&quot;&gt;Friday 2015-09-19&lt;/h5&gt;
 &lt;p&gt;Creator of Socket.IO talks on future of Chat and Rich Realtime JavaScript application
 &lt;img src=&quot;https://i.imgur.com/fxBYyr6.jpg&quot; alt=&quot;Guillermo Rauch live on stage&quot; /&gt;&lt;/p&gt;
 
-&lt;h2&gt;Droids, JavaScript and Web Connected Hardware&lt;/h2&gt;
-
-&lt;h5&gt;Friday 2015-09-19&lt;/h5&gt;
-
+&lt;h2 id=&quot;droids-javascript-and-web-connected-hardware&quot;&gt;Droids, JavaScript and Web Connected Hardware&lt;/h2&gt;
+&lt;h5 id=&quot;friday-2015-09-19-1&quot;&gt;Friday 2015-09-19&lt;/h5&gt;
 &lt;p&gt;&lt;img src=&quot;https://i.imgur.com/IPR6dnQ.jpg&quot; alt=&quot;Droids, JavaScript and Web Connected Hardware&quot; /&gt;&lt;/p&gt;
 
-&lt;h2&gt;Nice use of Web Audio API&lt;/h2&gt;
-
-&lt;h5&gt;Friday 2015-09-19&lt;/h5&gt;
-
+&lt;h2 id=&quot;nice-use-of-web-audio-api&quot;&gt;Nice use of Web Audio API&lt;/h2&gt;
+&lt;h5 id=&quot;friday-2015-09-19-2&quot;&gt;Friday 2015-09-19&lt;/h5&gt;
 &lt;p&gt;These guys are playing live Djembe and filling the hall with music. They are using Web Audio API to capture sound signals and P5.js to visualze the music and beat being played. They are going to talk about the algorithm they are using to perfectly capture and process sound signals.
 &lt;img src=&quot;https://i.imgur.com/PYnqSP6.jpg&quot; alt=&quot;Nice use of Web Audio API&quot; /&gt;&lt;/p&gt;
 
-&lt;h2&gt;Mathias Talk on RegExp and Unicode&lt;/h2&gt;
-
-&lt;h5&gt;Friday 2015-09-18&lt;/h5&gt;
-
-&lt;p&gt;A very good talk on how unicode can be pain with RegExp and how &lt;code&gt;u&lt;/code&gt; flag in ES6 helps solve the problem.
+&lt;h2 id=&quot;mathias-talk-on-regexp-and-unicode&quot;&gt;Mathias Talk on RegExp and Unicode&lt;/h2&gt;
+&lt;h5 id=&quot;friday-2015-09-18&quot;&gt;Friday 2015-09-18&lt;/h5&gt;
+&lt;p&gt;A very good talk on how unicode can be pain with RegExp and how &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;u&lt;/code&gt; flag in ES6 helps solve the problem.
 &lt;img src=&quot;https://i.imgur.com/gnseXuA.jpg&quot; alt=&quot;Mathias Talk on RegExp and Unicode&quot; /&gt;&lt;/p&gt;
 
-&lt;h2&gt;Welcome Board&lt;/h2&gt;
-
-&lt;h5&gt;Friday 2015-09-18&lt;/h5&gt;
-
-&lt;p&gt;Its actually a very huge board, I&amp;#39;ll capture a small part of it.
+&lt;h2 id=&quot;welcome-board&quot;&gt;Welcome Board&lt;/h2&gt;
+&lt;h5 id=&quot;friday-2015-09-18-1&quot;&gt;Friday 2015-09-18&lt;/h5&gt;
+&lt;p&gt;Its actually a very huge board, I’ll capture a small part of it.
 &lt;img src=&quot;https://i.imgur.com/m9AIzoG.jpg&quot; alt=&quot;Welcome Board&quot; /&gt;&lt;/p&gt;
 
-&lt;h2&gt;Sunshine&lt;/h2&gt;
-
-&lt;h5&gt;Friday 2015-09-18&lt;/h5&gt;
-
+&lt;h2 id=&quot;sunshine&quot;&gt;Sunshine&lt;/h2&gt;
+&lt;h5 id=&quot;friday-2015-09-18-2&quot;&gt;Friday 2015-09-18&lt;/h5&gt;
 &lt;p&gt;I got a window seat, on the emergency exit door with an extra leg space, so comfortable.
 &lt;img src=&quot;https://i.imgur.com/pF3mxWP.jpg&quot; alt=&quot;Sunshine&quot; /&gt;&lt;/p&gt;
 
-&lt;h2&gt;Ready to board&lt;/h2&gt;
+&lt;h2 id=&quot;ready-to-board&quot;&gt;Ready to board&lt;/h2&gt;
+&lt;h5 id=&quot;friday-2015-09-18-3&quot;&gt;Friday 2015-09-18&lt;/h5&gt;
 
-&lt;h5&gt;Friday 2015-09-18&lt;/h5&gt;
-
-&lt;p&gt;It&amp;#39;s very calm and silent today, the sun hasn&amp;#39;t risen yet. Waiting to board the plane. Will be taking off for bengaluru in a few more minutes.&lt;/p&gt;
+&lt;p&gt;It’s very calm and silent today, the sun hasn’t risen yet. Waiting to board the plane. Will be taking off for bengaluru in a few more minutes.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;https://i.imgur.com/879UMbF.jpg&quot; alt=&quot;Plane&quot; /&gt;&lt;/p&gt;
 </description>
@@ -447,45 +417,42 @@ to database cluster and clear the hash maps.&lt;/p&gt;
     
       <item>
         <title>My Talk Proposal for JSFoo 2015 - Debugging Javascript on Mobile Browsers</title>
-        <link>https://localhost:4000/My-Talk-Proposal-for-JSFoo-2015-Debugging-Javascript-on-Mobile-Browsers</link>
-        <pubDate>Tue, 04 Aug 2015 06:14:52 +0530</pubDate>
+        <link>http://localhost:4000/My-Talk-Proposal-for-JSFoo-2015-Debugging-Javascript-on-Mobile-Browsers</link>
+        <pubDate>Mon, 03 Aug 2015 20:44:52 -0400</pubDate>
         <author>Pankaj Malhotra</author>
-        <description>&lt;p&gt;Here is a proposal of my talk titled &amp;quot;Debugging Javascript on Mobile-Browsers&amp;quot; for JSFoo 2015. It covers a major part of the research work I did while interning with Mobile team at BrowserStack.&lt;/p&gt;
+        <description>&lt;p&gt;Here is a proposal of my talk titled “Debugging Javascript on Mobile-Browsers” for JSFoo 2015. It covers a major part of the research work I did while interning with Mobile team at BrowserStack.&lt;/p&gt;
 
-&lt;p&gt;Although the tools mentioned in this talk are for general Mobile Web Debugging which provide JS Debugging, Element Inspection, Network, Resources, Sources, Profiling etc depending on tool, but in the talk I&amp;#39;ll mainly concentrate on JS Debugging.&lt;/p&gt;
+&lt;p&gt;Although the tools mentioned in this talk are for general Mobile Web Debugging which provide JS Debugging, Element Inspection, Network, Resources, Sources, Profiling etc depending on tool, but in the talk I’ll mainly concentrate on JS Debugging.&lt;/p&gt;
 
-&lt;h1&gt;Link to Proposal&lt;/h1&gt;
-
+&lt;h1 id=&quot;link-to-proposal&quot;&gt;Link to Proposal&lt;/h1&gt;
 &lt;p&gt;https://jsfoo.talkfunnel.com/2015/48-debugging-javascript-on-mobile-browsers&lt;/p&gt;
 
-&lt;h1&gt;Gist of Talk&lt;/h1&gt;
+&lt;h1 id=&quot;gist-of-talk&quot;&gt;Gist of Talk&lt;/h1&gt;
+&lt;iframe width=&quot;420&quot; height=&quot;315&quot; src=&quot;https://www.youtube.com/embed/ngedIOe4Eiw&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;
 
-&lt;iframe width=&quot;420&quot; height=&quot;315&quot; src=&quot;https://www.youtube.com/embed/ngedIOe4Eiw&quot; frameborder=&quot;0&quot; allowfullscreen&gt;&lt;/iframe&gt;
-
-&lt;h1&gt;Slides for Talk&lt;/h1&gt;
-
-&lt;script async class=&quot;speakerdeck-embed&quot; data-id=&quot;c0422e727ba043babcacf30a5060bfb0&quot; data-ratio=&quot;1.33333333333333&quot; src=&quot;//speakerdeck.com/assets/embed.js&quot;&gt;&lt;/script&gt;
+&lt;h1 id=&quot;slides-for-talk&quot;&gt;Slides for Talk&lt;/h1&gt;
+&lt;script async=&quot;&quot; class=&quot;speakerdeck-embed&quot; data-id=&quot;c0422e727ba043babcacf30a5060bfb0&quot; data-ratio=&quot;1.33333333333333&quot; src=&quot;//speakerdeck.com/assets/embed.js&quot;&gt;&lt;/script&gt;
 
 &lt;p&gt;I wish it gets selected, and I get a chance to speak at JSFoo this year.
 This is a completely fresh set of slides, so do suggest any modifications so that it can be made better.&lt;/p&gt;
 
-&lt;p&gt;Drop me a mail if you want me to speak at your event/conference on &amp;quot;Mobile Web Debugging&amp;quot;.&lt;/p&gt;
+&lt;p&gt;Drop me a mail if you want me to speak at your event/conference on “Mobile Web Debugging”.&lt;/p&gt;
 </description>
       </item>
     
       <item>
         <title>GoSprint and GoRhythms - Algorithms In GoLang</title>
-        <link>https://localhost:4000/GoSprint-And-GoRhythms-Algorithms-In-GoLang</link>
-        <pubDate>Sat, 01 Aug 2015 02:01:35 +0530</pubDate>
+        <link>http://localhost:4000/GoSprint-And-GoRhythms-Algorithms-In-GoLang</link>
+        <pubDate>Fri, 31 Jul 2015 16:31:35 -0400</pubDate>
         <author>Pankaj Malhotra</author>
-        <description>&lt;p&gt;Few weeks back I started a new section called &lt;code&gt;coding&lt;/code&gt; on my blog. If you follow my blog you would have seen that there wasn&amp;#39;t much activity and posts around that section as promised.
-Its not that I have stoppped reading algorithms and just doing so called &lt;code&gt;cool&lt;/code&gt; stuff, the reason for not making regular posts in that section is that most of the times when I read an algorithm, its implementation in C++ is given along with it. So writing the same code again isn&amp;#39;t interesting, but I feel like implementing the algorithm and make a blog post whenever I read something new.&lt;/p&gt;
+        <description>&lt;p&gt;Few weeks back I started a new section called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;coding&lt;/code&gt; on my blog. If you follow my blog you would have seen that there wasn’t much activity and posts around that section as promised.
+Its not that I have stoppped reading algorithms and just doing so called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cool&lt;/code&gt; stuff, the reason for not making regular posts in that section is that most of the times when I read an algorithm, its implementation in C++ is given along with it. So writing the same code again isn’t interesting, but I feel like implementing the algorithm and make a blog post whenever I read something new.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/public/images/gopher.png&quot; alt=&quot;Gophers&quot; style=&quot;float:left; margin-right:20px; margin-top:15px; width: 40%; height: 40%&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;To deal with this problem, I am planning to do a &lt;code&gt;GoSprint&lt;/code&gt;. In coming days whatever algorithm I read I&amp;#39;ll post Go source code for its imlementation. This will allow me to implement the algorithm I read and also help me get a better grip on language.&lt;/p&gt;
+&lt;p&gt;To deal with this problem, I am planning to do a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;GoSprint&lt;/code&gt;. In coming days whatever algorithm I read I’ll post Go source code for its imlementation. This will allow me to implement the algorithm I read and also help me get a better grip on language.&lt;/p&gt;
 
-&lt;p&gt;I initiated a repository &lt;a href=&quot;https://github.com/bitgeeky/GoRhythms&quot;&gt;GoRhythms&lt;/a&gt; on GitHub which will contain all the code snippets, also I am renaming the &lt;code&gt;coding&lt;/code&gt; section on my blog to &lt;code&gt;GoRhythms&lt;/code&gt; since all the algorithms will now be posted under this section.&lt;/p&gt;
+&lt;p&gt;I initiated a repository &lt;a href=&quot;https://github.com/bitgeeky/GoRhythms&quot;&gt;GoRhythms&lt;/a&gt; on GitHub which will contain all the code snippets, also I am renaming the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;coding&lt;/code&gt; section on my blog to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;GoRhythms&lt;/code&gt; since all the algorithms will now be posted under this section.&lt;/p&gt;
 
 &lt;p&gt;Shout out to all the Gophers out there, pull requests welcomed !&lt;/p&gt;
 </description>
@@ -493,26 +460,29 @@ Its not that I have stoppped reading algorithms and just doing so called &lt;cod
     
       <item>
         <title>Skip SSL HostName Verification Java HttpsURLConnection</title>
-        <link>https://localhost:4000/Skip-SSL-HostName-Verification-Java-HttpsURLConnection</link>
-        <pubDate>Tue, 28 Jul 2015 02:09:10 +0530</pubDate>
+        <link>http://localhost:4000/Skip-SSL-HostName-Verification-Java-HttpsURLConnection</link>
+        <pubDate>Mon, 27 Jul 2015 16:39:10 -0400</pubDate>
         <author>Pankaj Malhotra</author>
         <description>&lt;p&gt;There might arise a situation when you have to make a secure request to a server with certificates that do not have host name to which you are making a request.&lt;/p&gt;
 
-&lt;p&gt;For example a certificate generated for &lt;code&gt;https://example.com&lt;/code&gt; might not support its ip address &lt;code&gt;https://ex.com.ip.add&lt;/code&gt; as a valid host name.&lt;/p&gt;
+&lt;p&gt;For example a certificate generated for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;https://example.com&lt;/code&gt; might not support its ip address &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;https://ex.com.ip.add&lt;/code&gt; as a valid host name.&lt;/p&gt;
 
 &lt;p&gt;PS: This situation is different from errors arrising from invalid or self signed certificates. This situation arrises when certificates are valid but the host name verification fails.&lt;/p&gt;
 
 &lt;p&gt;You might see an error like&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-&quot; data-lang=&quot;&quot;&gt;java.io.IOException: Hostname '0.0.0.0' was not verified
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;Where in place of &lt;code&gt;0.0.0.0&lt;/code&gt; its the server&amp;#39;s ip address.&lt;/p&gt;
 
-&lt;p&gt;In such a situation all you need to do is to skip host name verification for the URL connection. You can Override the default &lt;code&gt;HostnameVerifier&lt;/code&gt; with a custom verifier to add exception for the host you are making request to.&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;java.io.IOException: Hostname &apos;0.0.0.0&apos; was not verified
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;This should be done only if you are confident that the server you are sending request to doesn&amp;#39;t has any kind of security issues, because when you skip host name verification there is actually no point of &lt;code&gt;HTTPS/SSL&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Where in place of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0.0.0.0&lt;/code&gt; its the server’s ip address.&lt;/p&gt;
 
-&lt;p&gt;For a particular host you can write a custom &lt;code&gt;HostnameVerifier&lt;/code&gt; like:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-&quot; data-lang=&quot;&quot;&gt;HostnameVerifier hostnameVerifier = new HostnameVerifier() {
+&lt;p&gt;In such a situation all you need to do is to skip host name verification for the URL connection. You can Override the default &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HostnameVerifier&lt;/code&gt; with a custom verifier to add exception for the host you are making request to.&lt;/p&gt;
+
+&lt;p&gt;This should be done only if you are confident that the server you are sending request to doesn’t has any kind of security issues, because when you skip host name verification there is actually no point of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HTTPS/SSL&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;For a particular host you can write a custom &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HostnameVerifier&lt;/code&gt; like:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;HostnameVerifier hostnameVerifier = new HostnameVerifier() {
     @Override
     public boolean verify(String hostname, SSLSession session) {
         HostnameVerifier hv =
@@ -520,11 +490,13 @@ Its not that I have stoppped reading algorithms and just doing so called &lt;cod
         return hv.verify(&quot;hostname&quot;, session);
     }
 };
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;or just &lt;code&gt;return true&lt;/code&gt; if you want to skip for all hosts on a particular URL connection.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;or just &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;return true&lt;/code&gt; if you want to skip for all hosts on a particular URL connection.&lt;/p&gt;
 
 &lt;p&gt;A sample code that fetches JSON data using such request:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-&quot; data-lang=&quot;&quot;&gt;import android.util.Log;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -578,17 +550,18 @@ public class SkipVerification implements Runnable {
         }
     }
 }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;The above code makes a &lt;code&gt;https&lt;/code&gt; request to a server whose certificate doesn&amp;#39;t have an entry of its ip address as a verified hostname. The custom &lt;code&gt;HostnameVerifier&lt;/code&gt; skips any kind of hostname verification particular to a &lt;code&gt;HttpsURLConnection&lt;/code&gt;.&lt;/p&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The above code makes a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;https&lt;/code&gt; request to a server whose certificate doesn’t have an entry of its ip address as a verified hostname. The custom &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HostnameVerifier&lt;/code&gt; skips any kind of hostname verification particular to a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HttpsURLConnection&lt;/code&gt;.&lt;/p&gt;
 </description>
       </item>
     
       <item>
         <title>Retrieving Safari History From JailBroken IOS Device</title>
-        <link>https://localhost:4000/Retrieving-Safari-History-From-JailBroken-IOS-Device</link>
-        <pubDate>Sun, 28 Jun 2015 12:40:58 +0530</pubDate>
+        <link>http://localhost:4000/Retrieving-Safari-History-From-JailBroken-IOS-Device</link>
+        <pubDate>Sun, 28 Jun 2015 03:10:58 -0400</pubDate>
         <author>Pankaj Malhotra</author>
-        <description>&lt;h3&gt;This post is for Jail Broken devices and tested on IOS 8.1.2.&lt;/h3&gt;
+        <description>&lt;h3 id=&quot;this-post-is-for-jail-broken-devices-and-tested-on-ios-812&quot;&gt;This post is for Jail Broken devices and tested on IOS 8.1.2.&lt;/h3&gt;
 
 &lt;p&gt;This post explains how to retrieve safari history database from a jail broken ios device. Its a sqlite3 database file which contains all history data but the challenge is that there is no specific path on which the files exist, so you will have to first find the files.&lt;/p&gt;
 
@@ -597,45 +570,55 @@ public class SkipVerification implements Runnable {
 &lt;p&gt;2 Find History.db* files&lt;/p&gt;
 
 &lt;p&gt;Application data for most applications reside in subdirectories under:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-&quot; data-lang=&quot;&quot;&gt;/private/var/mobile/Containers/Data/Application/
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/private/var/mobile/Containers/Data/Application/
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;p&gt;The files which contain safari history data are:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-&quot; data-lang=&quot;&quot;&gt;History.db
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;History.db
 History.db-shm
 History.db-wal
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;p&gt;To find path to these files just do:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-&quot; data-lang=&quot;&quot;&gt;$ find /private/var/mobile/Containers/Data/Application -iname 'History.db*'
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ find /private/var/mobile/Containers/Data/Application -iname &apos;History.db*&apos;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
 &lt;p&gt;3 SCP files to a local location&lt;/p&gt;
 
-&lt;p&gt;Basically to get the data from these files you need &lt;code&gt;sqlite3&lt;/code&gt;. You can either install &lt;code&gt;sqlite3&lt;/code&gt; app from cydia to the mobile or better just scp the datbase files to machine you are working on.&lt;/p&gt;
+&lt;p&gt;Basically to get the data from these files you need &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sqlite3&lt;/code&gt;. You can either install &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sqlite3&lt;/code&gt; app from cydia to the mobile or better just scp the datbase files to machine you are working on.&lt;/p&gt;
 
-&lt;p&gt;You can copy the files one by one or better use &lt;code&gt;sshpass&lt;/code&gt; and &lt;code&gt;xargs&lt;/code&gt; to copy all files at one go like:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-&quot; data-lang=&quot;&quot;&gt;$ sshpass -p 'alpine' ssh  root@mobile_ip &quot;find /private/var/mobile/Containers/Data/Application -name 'History.db*'&quot; \
+&lt;p&gt;You can copy the files one by one or better use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sshpass&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;xargs&lt;/code&gt; to copy all files at one go like:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ sshpass -p &apos;alpine&apos; ssh  root@mobile_ip &quot;find /private/var/mobile/Containers/Data/Application -name &apos;History.db*&apos;&quot; \
     | xargs -I{} \
-    sshpass -p 'alpine' scp -P $SSH_PORT root@mobile_ip:'{}' /path/to/tmp/db/on/local/machine;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+    sshpass -p &apos;alpine&apos; scp -P $SSH_PORT root@mobile_ip:&apos;{}&apos; /path/to/tmp/db/on/local/machine;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
 &lt;p&gt;4 Load the sqlite database&lt;/p&gt;
 
-&lt;p&gt;If you change your working directory to the directory containing &lt;code&gt;History.db*&lt;/code&gt; files and do:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-&quot; data-lang=&quot;&quot;&gt;$ sqlite3 History.db
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;If you change your working directory to the directory containing &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;History.db*&lt;/code&gt; files and do:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ sqlite3 History.db
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
 &lt;p&gt;It will load sqlite3 database and now you can get any data you want about browser history.&lt;/p&gt;
 
 &lt;p&gt;5 Example query to get latest page visited:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-&quot; data-lang=&quot;&quot;&gt;&amp;gt; select url from history_items where id in( select history_item from history_visits order by visit_time desc limit 1);
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;That&amp;#39;s it ! Now you can just play around and get stats like number of times and time when a website was visited and much more.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;gt; select url from history_items where id in( select history_item from history_visits order by visit_time desc limit 1);
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;That’s it ! Now you can just play around and get stats like number of times and time when a website was visited and much more.&lt;/p&gt;
 </description>
       </item>
     
       <item>
         <title>Start App Service At BootUp On JailBroken IOS Device</title>
-        <link>https://localhost:4000/Start-App-Service-At-BootUp-On-JailBroken-IOS-Device</link>
-        <pubDate>Sat, 27 Jun 2015 12:49:35 +0530</pubDate>
+        <link>http://localhost:4000/Start-App-Service-At-BootUp-On-JailBroken-IOS-Device</link>
+        <pubDate>Sat, 27 Jun 2015 03:19:35 -0400</pubDate>
         <author>Pankaj Malhotra</author>
-        <description>&lt;h3&gt;This post is for Jail Broken devices and tested on IOS 8.1.2.&lt;/h3&gt;
+        <description>&lt;h3 id=&quot;this-post-is-for-jail-broken-devices-and-tested-on-ios-812&quot;&gt;This post is for Jail Broken devices and tested on IOS 8.1.2.&lt;/h3&gt;
 
 &lt;p&gt;To start an application or service everytime on device boot up just follow these simple steps:&lt;/p&gt;
 
@@ -645,38 +628,41 @@ History.db-wal
 This can be anything as simpler as a bash script or anything that launches your app.&lt;/p&gt;
 
 &lt;p&gt;3 Write a plist for application. An example plist for application is:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-&quot; data-lang=&quot;&quot;&gt;&lt;span class=&quot;cp&quot;&gt;&amp;lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;cp&quot;&gt;&amp;lt;!DOCTYPE plist PUBLIC &quot;-//Apple Computer//DTD PLIST 1.0//EN&quot; &quot;https://www.apple.com/DTDs/PropertyList-1.0.dtd&quot;&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;plist&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;version=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;1.0&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;dict&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;key&amp;gt;&lt;/span&gt;Label&lt;span class=&quot;nt&quot;&gt;&amp;lt;/key&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;string&amp;gt;&lt;/span&gt;com.example.BackgroundService&lt;span class=&quot;nt&quot;&gt;&amp;lt;/string&amp;gt;&lt;/span&gt;
 
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;key&amp;gt;&lt;/span&gt;ProgramArguments&lt;span class=&quot;nt&quot;&gt;&amp;lt;/key&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;array&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;string&amp;gt;&lt;/span&gt;/path/to/program/eg/bin/bash&lt;span class=&quot;nt&quot;&gt;&amp;lt;/string&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;string&amp;gt;&lt;/span&gt;path/to/launchscript/eg/root/BackgroundService&lt;span class=&quot;nt&quot;&gt;&amp;lt;/string&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/array&amp;gt;&lt;/span&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&amp;gt;
+&amp;lt;!DOCTYPE plist PUBLIC &quot;-//Apple Computer//DTD PLIST 1.0//EN&quot; &quot;https://www.apple.com/DTDs/PropertyList-1.0.dtd&quot;&amp;gt;
+&amp;lt;plist version=&quot;1.0&quot;&amp;gt;
+&amp;lt;dict&amp;gt;
+        &amp;lt;key&amp;gt;Label&amp;lt;/key&amp;gt;
+        &amp;lt;string&amp;gt;com.example.BackgroundService&amp;lt;/string&amp;gt;
+        
+        &amp;lt;key&amp;gt;ProgramArguments&amp;lt;/key&amp;gt;
+        &amp;lt;array&amp;gt;
+        &amp;lt;string&amp;gt;/path/to/program/eg/bin/bash&amp;lt;/string&amp;gt;
+        &amp;lt;string&amp;gt;path/to/launchscript/eg/root/BackgroundService&amp;lt;/string&amp;gt;
+        &amp;lt;/array&amp;gt;
+        
+        &amp;lt;key&amp;gt;RunAtLoad&amp;lt;/key&amp;gt;
+        &amp;lt;true/&amp;gt;
 
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;key&amp;gt;&lt;/span&gt;RunAtLoad&lt;span class=&quot;nt&quot;&gt;&amp;lt;/key&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;true/&amp;gt;&lt;/span&gt;
+        &amp;lt;key&amp;gt;StandardErrorPath&amp;lt;/key&amp;gt;
+        &amp;lt;string&amp;gt;/var/logs/BackgroundService.log&amp;lt;/string&amp;gt;
+        
+        &amp;lt;key&amp;gt;StandardOutPath&amp;lt;/key&amp;gt;
+        &amp;lt;string&amp;gt;/tmp/BackgroundService.log&amp;lt;/string&amp;gt;
+&amp;lt;/dict&amp;gt;
+&amp;lt;/plist&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;You can name it anything for example &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;com.example.BackgroundService.plist&lt;/code&gt;&lt;/p&gt;
 
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;key&amp;gt;&lt;/span&gt;StandardErrorPath&lt;span class=&quot;nt&quot;&gt;&amp;lt;/key&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;string&amp;gt;&lt;/span&gt;/var/logs/BackgroundService.log&lt;span class=&quot;nt&quot;&gt;&amp;lt;/string&amp;gt;&lt;/span&gt;
+&lt;p&gt;4 Copy the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;plist&lt;/code&gt; file to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/Library/LaunchDaemons/&lt;/code&gt; directory.&lt;/p&gt;
 
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;key&amp;gt;&lt;/span&gt;StandardOutPath&lt;span class=&quot;nt&quot;&gt;&amp;lt;/key&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;string&amp;gt;&lt;/span&gt;/tmp/BackgroundService.log&lt;span class=&quot;nt&quot;&gt;&amp;lt;/string&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/dict&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/plist&amp;gt;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;You can name it anything for example &lt;code&gt;com.example.BackgroundService.plist&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;5 Load the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;plist&lt;/code&gt; using:&lt;/p&gt;
 
-&lt;p&gt;4 Copy the &lt;code&gt;plist&lt;/code&gt; file to &lt;code&gt;/Library/LaunchDaemons/&lt;/code&gt; directory.&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ launchctl load /Library/LaunchDaemons/com.example.BackgroundService.plist
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;5 Load the &lt;code&gt;plist&lt;/code&gt; using:&lt;/p&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-&quot; data-lang=&quot;&quot;&gt;$ launchctl load /Library/LaunchDaemons/com.example.BackgroundService.plist
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;That&amp;#39;s it ! Now every time you boot up the device your service will start running automatically.&lt;/p&gt;
+&lt;p&gt;That’s it ! Now every time you boot up the device your service will start running automatically.&lt;/p&gt;
 </description>
       </item>
     

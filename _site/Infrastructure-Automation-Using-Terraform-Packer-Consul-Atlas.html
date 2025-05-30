@@ -26,7 +26,7 @@
 <link rel="stylesheet" href="/public/css/til.css">
 
 <!-- Google fonts -->
-<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
 <link href='https://fonts.googleapis.com/css?family=Give+You+Glory' rel='stylesheet' type='text/css'>
 
 
@@ -62,20 +62,19 @@
       </header>
 
       <article class="single row gutters">
-  <time class="published" datetime="2015-04-17">17 April 2015</time>
+  <time class="published" datetime="2015-04-16">16 April 2015</time>
   <h2>Infrastructure Automation Using Terraform, Packer, Consul and ATLAS Workflow</h2>
 
-  <p>I have been working as a software contractor for HashiCorp for over a month now. My main work is to write examples for HashiCorp <a href="https://atlas.hashicorp.com/">ATLAS</a> which is an upcoming product from HashiCorp and is under tech review at the moment. During this time I got to work on tools like Terraform, Packer and Consul. These tools are all from HashiCorp. In this blog post I&#39;ll describe briefly what each of these tools is used for and about the examples I wrote for Atlas.</p>
+  <p>I have been working as a software contractor for HashiCorp for over a month now. My main work is to write examples for HashiCorp <a href="https://atlas.hashicorp.com/">ATLAS</a> which is an upcoming product from HashiCorp and is under tech review at the moment. During this time I got to work on tools like Terraform, Packer and Consul. These tools are all from HashiCorp. In this blog post I’ll describe briefly what each of these tools is used for and about the examples I wrote for Atlas.</p>
 
-<h2>What is Infrastructure Automation ?</h2>
-
-<p>As the name suggests its automating the process of creating vm&#39;s, managing load balancers, security groups, ssh-keys, ip-address and all the other resources that are associated with the machine or container.
+<h2 id="what-is-infrastructure-automation-">What is Infrastructure Automation ?</h2>
+<p>As the name suggests its automating the process of creating vm’s, managing load balancers, security groups, ssh-keys, ip-address and all the other resources that are associated with the machine or container.
 When the size of data centres is large and it consists of hundreds or thousands of nodes and servers its impossible to handle these resources manually. So you need an automation tool that would do the work for you and to preserve all the infrastructure as a code, configuration files to be more precise. Based on the infrastructure configuration and the commands you pass every thing in cloud can be controlled using the automation tool.</p>
 
-<h2>What is Terraform ?</h2>
+<h2 id="what-is-terraform-">What is Terraform ?</h2>
+<p><a href="https://www.terraform.io/">Terraform</a> is an Infrastructure automation tool used to store infrastructure as code. Its written in <code class="language-plaintext highlighter-rouge">go</code> and has its own syntax for writing infrastructure configuration using <code class="language-plaintext highlighter-rouge">*.tf</code> file. A sample terraform file looks like:</p>
 
-<p><a href="https://www.terraform.io/">Terraform</a> is an Infrastructure automation tool used to store infrastructure as code. Its written in <code>go</code> and has its own syntax for writing infrastructure configuration using <code>*.tf</code> file. A sample terraform file looks like:</p>
-<div class="highlight"><pre><code class="language-" data-lang="">provider "aws" {
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>provider "aws" {
     access_key = "ACCESS_KEY_HERE"
     secret_key = "SECRET_KEY_HERE"
     region = "us-east-1"
@@ -88,64 +87,63 @@ resource "aws_instance" "web" {
     # This will create 1 instances
     count = 1
 }
-</code></pre></div>
-<p>So you can specify the priver AWS in this case and specify the resources you want to create on that provider like <code>aws_instance</code> in this case. On running <code>$ terraform plan</code> you can check the validity of your terraform configuration, it will give an error if there is any syntax issue, resource dependency issues and performs validation of resources, credentials etc but the actual output you get on running <code>$ terraform apply</code> - which actually deploys these resources might differ from the output of <code>$ terraform plan</code> in some cases.</p>
+</code></pre></div></div>
 
-<p>So running <code>$ terraform apply</code> on this will create an aws instance with specified configuration. It actually creates a graph on backend to check for resource dependencies and you can get the graph using the commnd <code>$ terraform graph</code>. If anything goes wrong you can run <code>$ terraform destroy</code> to destroy the complete infrastructure.</p>
+<p>So you can specify the priver AWS in this case and specify the resources you want to create on that provider like <code class="language-plaintext highlighter-rouge">aws_instance</code> in this case. On running <code class="language-plaintext highlighter-rouge">$ terraform plan</code> you can check the validity of your terraform configuration, it will give an error if there is any syntax issue, resource dependency issues and performs validation of resources, credentials etc but the actual output you get on running <code class="language-plaintext highlighter-rouge">$ terraform apply</code> - which actually deploys these resources might differ from the output of <code class="language-plaintext highlighter-rouge">$ terraform plan</code> in some cases.</p>
 
-<p>It comes with support from a lot of service providers AWS, Azure, Digital Ocean, Heroku, Google Cloud, Docker etc. All these service providers actually provide api&#39;s to communicate with their services and terraform provides an abstarction layer over these api&#39;s along with other very useful features.</p>
+<p>So running <code class="language-plaintext highlighter-rouge">$ terraform apply</code> on this will create an aws instance with specified configuration. It actually creates a graph on backend to check for resource dependencies and you can get the graph using the commnd <code class="language-plaintext highlighter-rouge">$ terraform graph</code>. If anything goes wrong you can run <code class="language-plaintext highlighter-rouge">$ terraform destroy</code> to destroy the complete infrastructure.</p>
 
-<p>This is a very small example to just give an idea what terraform is all about, you should see the <a href="https://www.terraform.io/docs/index.html">official docmentation</a> for many other features that it offers. It has developed a very good community also you can visit <code>#terraform-tool</code> on freenode to ask any doubts etc.</p>
+<p>It comes with support from a lot of service providers AWS, Azure, Digital Ocean, Heroku, Google Cloud, Docker etc. All these service providers actually provide api’s to communicate with their services and terraform provides an abstarction layer over these api’s along with other very useful features.</p>
 
-<h2>What is Packer ?</h2>
+<p>This is a very small example to just give an idea what terraform is all about, you should see the <a href="https://www.terraform.io/docs/index.html">official docmentation</a> for many other features that it offers. It has developed a very good community also you can visit <code class="language-plaintext highlighter-rouge">#terraform-tool</code> on freenode to ask any doubts etc.</p>
 
+<h2 id="what-is-packer-">What is Packer ?</h2>
 <p>Writing terraform files can get a lot complex sometimes when you need to install some packages on your machine or make a particular setup on the machine you just created. Its always advised to machine a machine image for whatever you want to do. In the machine image you can specify the packages you want to install on the machine, configuration you need to make before the machine actually gets created or scripts you want to execute after you create the machine.</p>
 
-<p><a href="https://www.packer.io/">Packer</a> allows you to deal with this task of creating machine images so that they can be deployed cross platform on multiple resource providers parallely. Its also written in <code>go</code> and all the image configuration can be written in a simple <code>json</code> format. A sample configuration looks like:</p>
-<div class="highlight"><pre><code class="language-" data-lang=""><span class="p">{</span><span class="w">
-  </span><span class="nt">"variables"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="nt">"aws_access_key"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ACCESS_KEY_HERE"</span><span class="p">,</span><span class="w">
-    </span><span class="nt">"aws_secret_key"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SECRET_KEY_HERE"</span><span class="w">
-  </span><span class="p">},</span><span class="w">
-  </span><span class="nt">"builders"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w">
-    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"amazon-ebs"</span><span class="p">,</span><span class="w">
-    </span><span class="nt">"access_key"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
-    </span><span class="nt">"secret_key"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
-    </span><span class="nt">"region"</span><span class="p">:</span><span class="w"> </span><span class="s2">"us-east-1"</span><span class="p">,</span><span class="w">
-    </span><span class="nt">"source_ami"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ami-9eaa1cf6"</span><span class="p">,</span><span class="w">
-    </span><span class="nt">"instance_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"t2.micro"</span><span class="p">,</span><span class="w">
-    </span><span class="nt">"ssh_username"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ubuntu"</span><span class="p">,</span><span class="w">
-    </span><span class="nt">"ami_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"packer-example "</span><span class="w">
-  </span><span class="p">}]</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre></div>
-<p>Similar to <code>$ terraform plan</code> you can validate the configuration using <code>$ packer validate example.json</code> and the run <code>$ packer build example.json</code> to actually create the machine image.</p>
+<p><a href="https://www.packer.io/">Packer</a> allows you to deal with this task of creating machine images so that they can be deployed cross platform on multiple resource providers parallely. Its also written in <code class="language-plaintext highlighter-rouge">go</code> and all the image configuration can be written in a simple <code class="language-plaintext highlighter-rouge">json</code> format. A sample configuration looks like:</p>
 
-<h2>What is ATLAS ?</h2>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
+  "variables": {
+    "aws_access_key": "ACCESS_KEY_HERE",
+    "aws_secret_key": "SECRET_KEY_HERE"
+  },
+  "builders": [{
+    "type": "amazon-ebs",
+    "access_key": "",
+    "secret_key": "",
+    "region": "us-east-1",
+    "source_ami": "ami-9eaa1cf6",
+    "instance_type": "t2.micro",
+    "ssh_username": "ubuntu",
+    "ami_name": "packer-example "
+  }]
+}
+</code></pre></div></div>
 
+<p>Similar to <code class="language-plaintext highlighter-rouge">$ terraform plan</code> you can validate the configuration using <code class="language-plaintext highlighter-rouge">$ packer validate example.json</code> and the run <code class="language-plaintext highlighter-rouge">$ packer build example.json</code> to actually create the machine image.</p>
+
+<h2 id="what-is-atlas-">What is ATLAS ?</h2>
 <p>So now you have the machine images and your terraform deployment configurations. Lets say, you want to share your infrastructure with one of the team members or you need a place to host the machine images, develop your infrastructure further and then deploy it immediately. This is what ATLAS is designed for. It provides a platform to perform all these operations at a single place.</p>
 
-<p>I would describe <a href="http://atlas.hashicorp.com/">ATLAS</a> as a utility to store and share your infrastrucutre. Like you can share and develop your application code on GitHub, ATLAS provides a platform to develop and share you infrastructure while providing instant deployment option.</p>
+<p>I would describe <a href="https://atlas.hashicorp.com/">ATLAS</a> as a utility to store and share your infrastrucutre. Like you can share and develop your application code on GitHub, ATLAS provides a platform to develop and share you infrastructure while providing instant deployment option.</p>
 
 <p>The workflow of ATLAS is like:</p>
 
 <ol>
-<li>Create machine images using Packer and push them to Atlas.</li>
-<li>Push the application code to Atlas. You can use a vagrant box for this.</li>
-<li>Link application code to infrastructure images.</li>
-<li>Deploy Atlas artifacts using Terraform on cloud.</li>
+  <li>Create machine images using Packer and push them to Atlas.</li>
+  <li>Push the application code to Atlas. You can use a vagrant box for this.</li>
+  <li>Link application code to infrastructure images.</li>
+  <li>Deploy Atlas artifacts using Terraform on cloud.</li>
 </ol>
 
-<h2>What is Consul ?</h2>
-
+<h2 id="what-is-consul-">What is Consul ?</h2>
 <p>Now that the infrastructure is up and running, how do we find that all nodes in our infrastrucure are behaving as expected and are up and running ? In another case say you deployed database on one of the nodes and application on the other one, now how does one nodes comes to know about other ? How can the application and database nodes communicate with each other ?</p>
 
-<p><a href="https://consul.io/">Consul</a> provides a solution to these problems. Its basically a service discovery and health monitoring tool. Apart from this it can also be used as a Key/Value Storage and it can work across multi datacenters. So the nodes monitored by consul need not be present in the same datacenter. Its based on the <code>gossip</code> protocol which itself utilises <code>udp</code> for data transfer.</p>
+<p><a href="https://consul.io/">Consul</a> provides a solution to these problems. Its basically a service discovery and health monitoring tool. Apart from this it can also be used as a Key/Value Storage and it can work across multi datacenters. So the nodes monitored by consul need not be present in the same datacenter. Its based on the <code class="language-plaintext highlighter-rouge">gossip</code> protocol which itself utilises <code class="language-plaintext highlighter-rouge">udp</code> for data transfer.</p>
 
 <p>So these are the interesting things I am working on. Apart from these I also worked on Docker containers and Vagrant boxes but those are quite common now.</p>
 
-<h2>What examples I wrote ?</h2>
-
+<h2 id="what-examples-i-wrote-">What examples I wrote ?</h2>
 <p>I wrote a couple of examples on how to deploy Wordpress, link Travis, deploy Docker, Discourse and tutorials on getting SSH access to the machines in infractructure using the ATLAS workflow. I will give a brief introduction and link for each of these in the next blog post.</p>
 
 
@@ -165,8 +163,8 @@ resource "aws_instance" "web" {
             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
         })();
     </script>
-    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
     
 
       
@@ -175,9 +173,7 @@ resource "aws_instance" "web" {
 
       <footer>
           <p>
-          Subscribe to: <a href="/feed.xml" target="_blank">Posts(Atom)</a>
-	  <br/>
-	  No Attributions, It's all yours under <a rel="license" href="http://creativecommons.org/publicdomain/zero/1.0/"> Creative Commons CC0</a>.
+          Thank you, please contact via email
         </p>
       </footer>
     </div>

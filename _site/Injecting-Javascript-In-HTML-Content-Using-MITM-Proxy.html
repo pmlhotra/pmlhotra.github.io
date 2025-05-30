@@ -26,7 +26,7 @@
 <link rel="stylesheet" href="/public/css/til.css">
 
 <!-- Google fonts -->
-<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
 <link href='https://fonts.googleapis.com/css?family=Give+You+Glory' rel='stylesheet' type='text/css'>
 
 
@@ -62,56 +62,55 @@
       </header>
 
       <article class="single row gutters">
-  <time class="published" datetime="2015-06-09">09 June 2015</time>
+  <time class="published" datetime="2015-06-08">08 June 2015</time>
   <h2>Injecting Javascript In HTML Content Using MITM Proxy</h2>
 
   <p>Its been a few days that I have been learning about Man In The Middle MITM proxy, my use case was to inject a simple javascript to html pages that users open behind proxy server.</p>
 
 <p>It actually involves a bit insight on how to do this, and a few small challenges. Here I describe the solutions I found to do this:</p>
 
-<h2>What is MITM proxy ?</h2>
-
+<h2 id="what-is-mitm-proxy-">What is MITM proxy ?</h2>
 <p>An interactive console program that allows traffic flows to be intercepted, inspected, modified and replayed.
 So basically it gives the proxy administartor the power to modify any traffic that goes through the proxy. You can play with html content, inject elements, get header data, modify headers, dns spoofing, traffic filteration, redirection and a lot more things you can do with mitmproxy.
-<br/>
+<br />
 <a href="https://github.com/mitmproxy/mitmproxy/tree/master/examples">Example scripts for doing experimentation</a>
-<br/>
+<br />
 For more information visit <a href="https://mitmproxy.org/">mitmproxy official website</a></p>
 
-<h2>Installation</h2>
-
-<p>For OS X its distributed as a homebrew package and is really simple to install, just do <code>$ brew install mitmproxy</code>.
+<h2 id="installation">Installation</h2>
+<p>For OS X its distributed as a homebrew package and is really simple to install, just do <code class="language-plaintext highlighter-rouge">$ brew install mitmproxy</code>.
 For troubleshooting and setting environment variables have a look at the <a href="https://mitmproxy.org/doc/install.html">installation guide</a></p>
 
-<p>Make sure you have all the certificates used by mitm proxy in <code>~/.mitmproxy/</code>. Install certificates on browser by browsing to <code>mitm.it</code>. If the traffic is passing through the proxy server this page will show you options to install certificates, just select the platform you are browsing on.  For more information about generating and installing certificates see <a href="https://mitmproxy.org/doc/certinstall.html">about cerificates</a></p>
+<p>Make sure you have all the certificates used by mitm proxy in <code class="language-plaintext highlighter-rouge">~/.mitmproxy/</code>. Install certificates on browser by browsing to <code class="language-plaintext highlighter-rouge">mitm.it</code>. If the traffic is passing through the proxy server this page will show you options to install certificates, just select the platform you are browsing on.  For more information about generating and installing certificates see <a href="https://mitmproxy.org/doc/certinstall.html">about cerificates</a></p>
 
-<h2>Running</h2>
-<div class="highlight"><pre><code class="language-" data-lang="">$ mitmproxy -p port_number
-</code></pre></div>
-<p>The default port on which proxy server runs is <code>8080</code> but you can specify the <code>port_number</code> by using <code>-p</code> flag. It will open up a window showing traffic passing through proxy.</p>
+<h2 id="running">Running</h2>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ mitmproxy -p port_number
+</code></pre></div></div>
+<p>The default port on which proxy server runs is <code class="language-plaintext highlighter-rouge">8080</code> but you can specify the <code class="language-plaintext highlighter-rouge">port_number</code> by using <code class="language-plaintext highlighter-rouge">-p</code> flag. It will open up a window showing traffic passing through proxy.</p>
 
-<p>Configure browser to use proxy server by specifying host as <code>localhost</code> and the port on which proxy server is listening.
+<p>Configure browser to use proxy server by specifying host as <code class="language-plaintext highlighter-rouge">localhost</code> and the port on which proxy server is listening.
 You will start seeing requests though the proxy and traffic passing through it.
 <img src="/public/images/mitmproxy.png" alt="MITM Console" style="margin-right:15px; width: 100%; height: 100%" /></p>
 
-<h2>Modifying traffic passing through proxy</h2>
-
+<h2 id="modifying-traffic-passing-through-proxy">Modifying traffic passing through proxy</h2>
 <p>You can pass scripts as arguments while running proxy server which will modify the traffic according to the logic you specify in script.
 The script will operate on each request passing through proxy, and will make the desired modification.</p>
 
-<h3>Inline Scripts</h3>
+<p>###Inline Scripts
+Basic Structure of an Inline script is:</p>
 
-<p>Basic Structure of an Inline script is:</p>
-<div class="highlight"><pre><code class="language-" data-lang="">def on_event(context, flow):
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def on_event(context, flow):
     some_logic
     another_logic
     do_something
-</code></pre></div>
+</code></pre></div></div>
+
 <p>The first argument to each event method is an instance of ScriptContext that lets the script interact with the global mitmproxy state. 
-<code>on_event</code> can be an event like request, response, start, clientconnect, serverconnect or any other event from this <a href="https://mitmproxy.org/doc/scripting/inlinescripts.html">list</a></p>
+<code class="language-plaintext highlighter-rouge">on_event</code> can be an event like request, response, start, clientconnect, serverconnect or any other event from this <a href="https://mitmproxy.org/doc/scripting/inlinescripts.html">list</a></p>
 
 <p>Script to inject javascript to html content:</p>
-<div class="highlight"><pre><code class="language-" data-lang=""># Usage: mitmdump -s "js_injector.py src"
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Usage: mitmdump -s "js_injector.py src"
 # (this script works best with --anticache)
 from bs4 import BeautifulSoup
 from libmproxy.protocol.http import decoded
@@ -136,54 +135,61 @@ def response(context, flow):
             html.body.insert(0, script)
             flow.response.content = str(html)
             context.log("Script injected.")
-</code></pre></div>
-<p>Run the mitm proxy using:</p>
-<div class="highlight"><pre><code class="language-" data-lang="">$ mitmdump -p 8888 -s "js_injector.py http://path/to/src.js"
-</code></pre></div>
-<p>Note: that we are using <code>mitmdump</code> istead of <code>mitmproxy</code> for getting more detailed output.</p>
+</code></pre></div></div>
 
-<p>Note: If you want to inject javascript in an <code>https</code> website, your javascript file must also be hosted on <code>https</code> server.</p>
+<p>Run the mitm proxy using:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ mitmdump -p 8888 -s "js_injector.py http://path/to/src.js"
+</code></pre></div></div>
+
+<p>Note: that we are using <code class="language-plaintext highlighter-rouge">mitmdump</code> istead of <code class="language-plaintext highlighter-rouge">mitmproxy</code> for getting more detailed output.</p>
+
+<p>Note: If you want to inject javascript in an <code class="language-plaintext highlighter-rouge">https</code> website, your javascript file must also be hosted on <code class="language-plaintext highlighter-rouge">https</code> server.</p>
 
 <p>So far so good:
 Now open the url in browser configured to use proxy server, you should see a broken website.</p>
 
-<h3>Any guess why the website is broken ?</h3>
+<h3 id="any-guess-why-the-website-is-broken-">Any guess why the website is broken ?</h3>
 
-<p>The website is broken because in previous script our javascript is getting injected on every resource on page having <code>html.body</code> which should not be the case.</p>
+<p>The website is broken because in previous script our javascript is getting injected on every resource on page having <code class="language-plaintext highlighter-rouge">html.body</code> which should not be the case.</p>
 
 <p>Replace:</p>
-<div class="highlight"><pre><code class="language-" data-lang="">-- if html.body:
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-- if html.body:
 with
 ++ if html.body and ('text/html' in flow.response.headers["content-type"][0]):
-</code></pre></div>
-<p>to make sure only requests with <code>text/html</code> in their header get js injection.</p>
+</code></pre></div></div>
+
+<p>to make sure only requests with <code class="language-plaintext highlighter-rouge">text/html</code> in their header get js injection.</p>
 
 <p>Try to open the page again, it should now open fine with <em>almost</em> all resources loading properly.</p>
 
-<h3>So why <em>almost</em> all and not <em>ALL</em> ? Try to figure it out and read further:</h3>
+<h3 id="so-why-almost-all-and-not-all--try-to-figure-it-out-and-read-further">So why <em>almost</em> all and not <em>ALL</em> ? Try to figure it out and read further:</h3>
 
 <p>The reason is that an html page has multiple resources that can be of type text/html for example an iframe loading content from an external resource. But we want to inject our js only to the page that is opened by user at current time i.e the main page.</p>
 
 <p>Its not possible to do this without knowing what page is the main page and what are the elements within it. Therefore to overcome this situation we come up with a filter.</p>
 
 <p>filter.js</p>
-<div class="highlight"><pre><code class="language-" data-lang="">if(parent.document.URL!=document.location.href)
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>if(parent.document.URL!=document.location.href)
        throw new Error("Not the main page");
 
 (function(e){e.setAttribute("src","http://path/to/script.js");
 document.getElementsByTagName("body")[0].appendChild(e);})
 (document.createElement("script"));void(0);
-</code></pre></div>
-<p>So basically injecting this filter on proxy server side by replacing path/to/script.js with the path to actual js that we want to inject will do a client side verification to identify the main page and allow execution of js only on main page otherwise it will throw an error &quot;Not the main page&quot;.</p>
+</code></pre></div></div>
 
-<p>This solves our problem of js getting executed multiple times on a single page. Now the js we inject will execute only once but still on the proxy server side our js filter will get inject to all valid html resources i.e which have <code>text/html</code> as their <code>content-type</code> in header response.</p>
+<p>So basically injecting this filter on proxy server side by replacing path/to/script.js with the path to actual js that we want to inject will do a client side verification to identify the main page and allow execution of js only on main page otherwise it will throw an error “Not the main page”.</p>
 
-<h2>Final Steps:</h2>
+<p>This solves our problem of js getting executed multiple times on a single page. Now the js we inject will execute only once but still on the proxy server side our js filter will get inject to all valid html resources i.e which have <code class="language-plaintext highlighter-rouge">text/html</code> as their <code class="language-plaintext highlighter-rouge">content-type</code> in header response.</p>
 
+<h2 id="final-steps">Final Steps:</h2>
 <p>Inject JS filter on html resources:</p>
 
-<p>Final version of <code>js_injector.py</code></p>
-<div class="highlight"><pre><code class="language-" data-lang=""># Usage: mitmdump -s "js_injector.py src"
+<p>Final version of <code class="language-plaintext highlighter-rouge">js_injector.py</code></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># Usage: mitmdump -s "js_injector.py src"
 # (this script works best with --anticache)
 from bs4 import BeautifulSoup
 from libmproxy.protocol.http import decoded
@@ -210,10 +216,14 @@ def response(context, flow):
             html.body.insert(0, script)
             flow.response.content = str(html)
             context.log("******* Filter Injected *******")
-</code></pre></div><div class="highlight"><pre><code class="language-" data-lang="">$ mitmdump -p 8888 -s "js_injector.py http://path/to/filter.js"
-</code></pre></div>
-<p>Final version of <code>filter.js</code>:</p>
-<div class="highlight"><pre><code class="language-" data-lang="">if(parent.document.URL!=document.location.href)
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ mitmdump -p 8888 -s "js_injector.py http://path/to/filter.js"
+</code></pre></div></div>
+
+<p>Final version of <code class="language-plaintext highlighter-rouge">filter.js</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>if(parent.document.URL!=document.location.href)
        throw new Error("Not the main page");
 
 (function(e){e.setAttribute("src","http://path/to/script.js");
@@ -221,10 +231,11 @@ document.getElementsByTagName("body")[0].appendChild(e);})
 (document.createElement("script"));void(0);
 
 console.log("******* Script Injected *******")
-</code></pre></div>
-<p>Replace <code>/path/to/script.js</code> in <code>filter.js</code> with path to the script you want to actually inject.</p>
+</code></pre></div></div>
 
-<p>That&#39;s it ! Now the JS you inject will be executed only one time per page i.e the actual page and not the resources in it.</p>
+<p>Replace <code class="language-plaintext highlighter-rouge">/path/to/script.js</code> in <code class="language-plaintext highlighter-rouge">filter.js</code> with path to the script you want to actually inject.</p>
+
+<p>That’s it ! Now the JS you inject will be executed only one time per page i.e the actual page and not the resources in it.</p>
 
 
 </article>
@@ -243,8 +254,8 @@ console.log("******* Script Injected *******")
             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
         })();
     </script>
-    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
     
 
       
@@ -253,9 +264,7 @@ console.log("******* Script Injected *******")
 
       <footer>
           <p>
-          Subscribe to: <a href="/feed.xml" target="_blank">Posts(Atom)</a>
-	  <br/>
-	  No Attributions, It's all yours under <a rel="license" href="http://creativecommons.org/publicdomain/zero/1.0/"> Creative Commons CC0</a>.
+          Thank you, please contact via email
         </p>
       </footer>
     </div>

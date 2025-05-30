@@ -26,7 +26,7 @@
 <link rel="stylesheet" href="/public/css/til.css">
 
 <!-- Google fonts -->
-<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
 <link href='https://fonts.googleapis.com/css?family=Give+You+Glory' rel='stylesheet' type='text/css'>
 
 
@@ -65,7 +65,7 @@
   <time class="published" datetime="2015-06-27">27 June 2015</time>
   <h2>Start App Service At BootUp On JailBroken IOS Device</h2>
 
-  <h3>This post is for Jail Broken devices and tested on IOS 8.1.2.</h3>
+  <h3 id="this-post-is-for-jail-broken-devices-and-tested-on-ios-812">This post is for Jail Broken devices and tested on IOS 8.1.2.</h3>
 
 <p>To start an application or service everytime on device boot up just follow these simple steps:</p>
 
@@ -75,38 +75,41 @@
 This can be anything as simpler as a bash script or anything that launches your app.</p>
 
 <p>3 Write a plist for application. An example plist for application is:</p>
-<div class="highlight"><pre><code class="language-" data-lang=""><span class="cp">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
-<span class="cp">&lt;!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;</span>
-<span class="nt">&lt;plist</span> <span class="na">version=</span><span class="s">"1.0"</span><span class="nt">&gt;</span>
-<span class="nt">&lt;dict&gt;</span>
-        <span class="nt">&lt;key&gt;</span>Label<span class="nt">&lt;/key&gt;</span>
-        <span class="nt">&lt;string&gt;</span>com.example.BackgroundService<span class="nt">&lt;/string&gt;</span>
 
-        <span class="nt">&lt;key&gt;</span>ProgramArguments<span class="nt">&lt;/key&gt;</span>
-        <span class="nt">&lt;array&gt;</span>
-        <span class="nt">&lt;string&gt;</span>/path/to/program/eg/bin/bash<span class="nt">&lt;/string&gt;</span>
-        <span class="nt">&lt;string&gt;</span>path/to/launchscript/eg/root/BackgroundService<span class="nt">&lt;/string&gt;</span>
-        <span class="nt">&lt;/array&gt;</span>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+        &lt;key&gt;Label&lt;/key&gt;
+        &lt;string&gt;com.example.BackgroundService&lt;/string&gt;
+        
+        &lt;key&gt;ProgramArguments&lt;/key&gt;
+        &lt;array&gt;
+        &lt;string&gt;/path/to/program/eg/bin/bash&lt;/string&gt;
+        &lt;string&gt;path/to/launchscript/eg/root/BackgroundService&lt;/string&gt;
+        &lt;/array&gt;
+        
+        &lt;key&gt;RunAtLoad&lt;/key&gt;
+        &lt;true/&gt;
 
-        <span class="nt">&lt;key&gt;</span>RunAtLoad<span class="nt">&lt;/key&gt;</span>
-        <span class="nt">&lt;true/&gt;</span>
+        &lt;key&gt;StandardErrorPath&lt;/key&gt;
+        &lt;string&gt;/var/logs/BackgroundService.log&lt;/string&gt;
+        
+        &lt;key&gt;StandardOutPath&lt;/key&gt;
+        &lt;string&gt;/tmp/BackgroundService.log&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre></div></div>
+<p>You can name it anything for example <code class="language-plaintext highlighter-rouge">com.example.BackgroundService.plist</code></p>
 
-        <span class="nt">&lt;key&gt;</span>StandardErrorPath<span class="nt">&lt;/key&gt;</span>
-        <span class="nt">&lt;string&gt;</span>/var/logs/BackgroundService.log<span class="nt">&lt;/string&gt;</span>
+<p>4 Copy the <code class="language-plaintext highlighter-rouge">plist</code> file to <code class="language-plaintext highlighter-rouge">/Library/LaunchDaemons/</code> directory.</p>
 
-        <span class="nt">&lt;key&gt;</span>StandardOutPath<span class="nt">&lt;/key&gt;</span>
-        <span class="nt">&lt;string&gt;</span>/tmp/BackgroundService.log<span class="nt">&lt;/string&gt;</span>
-<span class="nt">&lt;/dict&gt;</span>
-<span class="nt">&lt;/plist&gt;</span>
-</code></pre></div>
-<p>You can name it anything for example <code>com.example.BackgroundService.plist</code></p>
+<p>5 Load the <code class="language-plaintext highlighter-rouge">plist</code> using:</p>
 
-<p>4 Copy the <code>plist</code> file to <code>/Library/LaunchDaemons/</code> directory.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ launchctl load /Library/LaunchDaemons/com.example.BackgroundService.plist
+</code></pre></div></div>
 
-<p>5 Load the <code>plist</code> using:</p>
-<div class="highlight"><pre><code class="language-" data-lang="">$ launchctl load /Library/LaunchDaemons/com.example.BackgroundService.plist
-</code></pre></div>
-<p>That&#39;s it ! Now every time you boot up the device your service will start running automatically.</p>
+<p>That’s it ! Now every time you boot up the device your service will start running automatically.</p>
 
 
 </article>
@@ -125,8 +128,8 @@ This can be anything as simpler as a bash script or anything that launches your 
             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
         })();
     </script>
-    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
     
 
       
@@ -135,9 +138,7 @@ This can be anything as simpler as a bash script or anything that launches your 
 
       <footer>
           <p>
-          Subscribe to: <a href="/feed.xml" target="_blank">Posts(Atom)</a>
-	  <br/>
-	  No Attributions, It's all yours under <a rel="license" href="http://creativecommons.org/publicdomain/zero/1.0/"> Creative Commons CC0</a>.
+          Thank you, please contact via email
         </p>
       </footer>
     </div>

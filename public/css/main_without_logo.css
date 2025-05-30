@@ -1,0 +1,230 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #FFF9F0;
+  font-family: 'Garamond', serif;
+  color: #228B22;
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6, p, ul, ol, dl, blockquote, table, img, hr,
+.fluid-width-video-wrapper, .highlight {
+  margin-bottom: 20px;
+  color: #228B22;
+}
+
+blockquote {
+  padding: 0 30px;
+  border-left: 2px solid #a3c1ad;
+}
+
+ul, ol {
+  margin-left: 40px;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  border: none;
+  outline: none;
+}
+
+a {
+  text-decoration: none;
+  color: #2e8b57;
+}
+
+a:hover {
+  color: #145a32;
+}
+
+hr {
+  border: 0;
+  height: 25px;
+  background: url(/public/images/eagle.png) center center no-repeat;
+}
+
+code {
+  font-family: Consolas, "Liberation Mono", Courier, monospace;
+  font-size: .8rem;
+}
+
+p code {
+  padding: 0px 5px;
+  border: 1px solid #ccc;
+  background-color: #f8f8f8;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+table {
+  border-collapse: collapse;
+  border: 1px solid #228B22;
+}
+
+table td, table th {
+  border: 1px solid #228B22;
+  padding: 5px 10px;
+}
+
+table thead {
+  background-color: #e0ebeb;
+}
+
+dt {
+  float: left;
+  width: 30%;
+  font-weight: bold;
+}
+
+dd {
+  float: right;
+  width: 70%;
+}
+
+footer {
+  font-size: .8rem;
+  text-align: center;
+  color: #228B22;
+}
+
+.azul a {
+  color: #228B22;
+}
+
+.azul a:hover {
+  color: #145a32;
+}
+
+.ruby a,
+.amber a,
+.avocado a {
+  color: #228B22;
+}
+
+.ruby a:hover,
+.amber a:hover,
+.avocado a:hover {
+  color: #145a32;
+}
+
+.highlight {
+  padding: 30px;
+  border-radius: 6px;
+  background-color: #f8f8f2;
+  color: #228B22;
+  line-height: 1;
+}
+
+.highlight code {
+  font-size: .7rem;
+}
+
+.container {
+  max-width: 750px;
+  padding: 0 20px;
+}
+
+.center {
+  text-align: center;
+}
+
+.right {
+  float: right;
+  margin: 0 0 20px 20px;
+}
+
+.left {
+  float: left;
+  margin: 0 20px 20px 0;
+}
+
+.top-navbar {
+  margin-bottom: 40px;
+  height: 110px;
+}
+
+.top-navbar a {
+  display: inline-block;
+  color: #228B22;
+  padding: 66px 20px 25px;
+  margin-right: 10px;
+  margin-top: -5px;
+  text-transform: uppercase;
+  border-radius: 0 0 5px 5px;
+  border-bottom: 1px solid #a3c1ad;
+  transition: all ease-in-out .3s;
+}
+
+.top-navbar a:hover,
+.top-navbar a.current-page {
+  color: #FFF9F0;
+  background-color: #228B22;
+  border-bottom: none;
+  transform: translateY(5px);
+}
+
+.archive, .single {
+  margin-bottom: 100px;
+}
+
+.single {
+  font-size: 1.125rem;
+  line-height: 28px;
+}
+
+.single time {
+  color: #588157;
+  font-size: .9rem;
+}
+
+.bundle {
+  border-top: 1px solid #b3b3b3;
+  padding-top: 10px;
+  margin-bottom: 10px;
+}
+
+.post-date {
+  text-align: right;
+}
+
+.not-found {
+  margin-top: 150px;
+  text-align: center;
+  font-size: 2rem;
+  color: #228B22;
+}
+
+.not-found h1 {
+  font-size: 8rem;
+}
+
+@media screen and (max-width: 767px) {
+  .top-navbar {
+    height: 35px;
+    text-align: center;
+    margin-top: 40px;
+  }
+  .top-navbar a {
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 0;
+    border: 1px solid #228B22;
+    transition: none;
+  }
+  .bundle, .post-date {
+    text-align: center;
+  }
+  .bundle article {
+    margin-bottom: 30px;
+  }
+  #logo {
+    background-position: center center;
+  }
+}

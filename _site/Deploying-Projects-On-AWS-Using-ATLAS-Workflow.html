@@ -26,7 +26,7 @@
 <link rel="stylesheet" href="/public/css/til.css">
 
 <!-- Google fonts -->
-<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
 <link href='https://fonts.googleapis.com/css?family=Give+You+Glory' rel='stylesheet' type='text/css'>
 
 
@@ -65,47 +65,42 @@
   <time class="published" datetime="2015-04-18">18 April 2015</time>
   <h2>Deploying Projects On AWS Using ATLAS Workflow</h2>
 
-  <p>In the <a href="http://pankajmalhotra.com/Infrastructure-Automation-Using-Terraform-Packer-Consul-Atlas/">last</a> post I talked about Infrastructure automation and gave a brief introduction about tools like Terraform, Packer, Consul and also talked about ATLAS and the workflow for deploying deploying infrastructure using it.</p>
+  <p>In the <a href="https://pankajmalhotra.com/Infrastructure-Automation-Using-Terraform-Packer-Consul-Atlas/">last</a> post I talked about Infrastructure automation and gave a brief introduction about tools like Terraform, Packer, Consul and also talked about ATLAS and the workflow for deploying deploying infrastructure using it.</p>
 
 <p>Today I am gonna get into details on how to actually deploy projects like a LAMP server, Wordpress, Discourse, Docker on AWS using Atlas workflow and how to generate and associate RSA keys and security group to SSH into any of your machines.</p>
 
-<p>Most of the informtion is in linked guides for each of the projects, I&#39;ll concentrate on main parts and things to pay special attention to.</p>
+<p>Most of the informtion is in linked guides for each of the projects, I’ll concentrate on main parts and things to pay special attention to.</p>
 
 <p>The <a href="https://atlas.hashicorp.com/help/getting-started/getting-started-overview">getting-started</a> guide gives a very good idea about how things work and practically explains the complete ATLAS workflow with a very easy example.</p>
 
-<h2>Deploying Wordpress on AWS</h2>
+<h2 id="deploying-wordpress-on-aws">Deploying Wordpress on AWS</h2>
+<p>Main thing to note on this tutorial is that you have to deploy database on a separate node since the aws instance gets rebuild everytime you push a new version of you application or make any configuration changes, so to preserve the application data its advised to deploy database on a separate node. We are using Consul here as a service discovery tool so that we get to get information about our application and databse server. So you don’t have to hardcode any ip address or any other other resource attached to a particular service.</p>
 
-<p>Main thing to note on this tutorial is that you have to deploy database on a separate node since the aws instance gets rebuild everytime you push a new version of you application or make any configuration changes, so to preserve the application data its advised to deploy database on a separate node. We are using Consul here as a service discovery tool so that we get to get information about our application and databse server. So you don&#39;t have to hardcode any ip address or any other other resource attached to a particular service.</p>
+<p>Since we are using Consul here, we will have to allow <code class="language-plaintext highlighter-rouge">udp</code> traffic on the port which Consul is running. As mentioned consul uses a <code class="language-plaintext highlighter-rouge">gossip</code> protocol to establish communication between services.</p>
 
-<p>Since we are using Consul here, we will have to allow <code>udp</code> traffic on the port which Consul is running. As mentioned consul uses a <code>gossip</code> protocol to establish communication between services.</p>
+<p>[Link to tutorial] (https://github.com/hashicorp/atlas-examples/tree/master/wordpress)</p>
 
-<p><a href="https://github.com/hashicorp/atlas-examples/tree/master/wordpress">Link to tutorial</a></p>
-
-<h2>Using Travis to push Application code to ATLAS</h2>
-
+<h2 id="using-travis-to-push-application-code-to-atlas">Using Travis to push Application code to ATLAS</h2>
 <p>As the name suggests this is an example demonstarting how to push application code to ATLAS from Travis. Here we use <a href="https://github.com/hashicorp/atlas-upload-cli">ATLAS Upload CLI</a>, a simple utility to push application code to Atlas.</p>
 
 <p><a href="https://github.com/hashicorp/atlas-examples/tree/master/TravisCI">Link to tutorial</a></p>
 
-<h2>SSH in an AWS Instance</h2>
-
+<h2 id="ssh-in-an-aws-instance">SSH in an AWS Instance</h2>
 <p>If you are setting up a production infrastructure, its advised not to allow any ports open or leave any authentication keys in aws instance but surely for debugging purpose you need to sometimes SSH in the instance you created using ATLAS workflow.</p>
 
 <p><a href="https://github.com/hashicorp/atlas-examples/blob/master/AWS-SSH-Setup/ssh.md">Link to tutorial</a></p>
 
-<h2>Deploy Docker Container on AWS</h2>
-
-<p>Support for Docker provider is released in recent version of terraform <code>0.4</code>, it still lacks some of requirements but the work is under progress and more features are expected to be released in upcoming versions.</p>
+<h2 id="deploy-docker-container-on-aws">Deploy Docker Container on AWS</h2>
+<p>Support for Docker provider is released in recent version of terraform <code class="language-plaintext highlighter-rouge">0.4</code>, it still lacks some of requirements but the work is under progress and more features are expected to be released in upcoming versions.</p>
 
 <p><a href="https://github.com/bitgeeky/atlas-examples/tree/docker/Docker">Link to tutorial</a></p>
 
-<h2>Deploy Discourse on AWS</h2>
-
+<h2 id="deploy-discourse-on-aws">Deploy Discourse on AWS</h2>
 <p>Discourse uses docker and does a lot of bootstraping to the instance before deploying the actual application code. So its advised to follow their official guide and treat the bootstraping part as a black box to avoid breaking anything.</p>
 
-<p><a href="https://github.com/bitgeeky/atlas-examples/tree/discourse/Discourse">Link to tutorial</a></p>
+<p>[Link to tutorial] (https://github.com/bitgeeky/atlas-examples/tree/discourse/Discourse)</p>
 
-<p>There are many other examples in official HashiCorp&#39;s <a href="https://github.com/hashicorp/atlas-examples">ATLAS Examples</a> respository on GitHub. I would recommend to go through some of them to get a good grip of how things work. </p>
+<p>There are many other examples in official HashiCorp’s <a href="https://github.com/hashicorp/atlas-examples">ATLAS Examples</a> respository on GitHub. I would recommend to go through some of them to get a good grip of how things work.</p>
 
 <p>If you think any project is missing feel free to raise an issue or You Can Add One Too !</p>
 
@@ -126,8 +121,8 @@
             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
         })();
     </script>
-    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
     
 
       
@@ -136,9 +131,7 @@
 
       <footer>
           <p>
-          Subscribe to: <a href="/feed.xml" target="_blank">Posts(Atom)</a>
-	  <br/>
-	  No Attributions, It's all yours under <a rel="license" href="http://creativecommons.org/publicdomain/zero/1.0/"> Creative Commons CC0</a>.
+          Thank you, please contact via email
         </p>
       </footer>
     </div>

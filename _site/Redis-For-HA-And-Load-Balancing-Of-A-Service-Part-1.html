@@ -26,7 +26,7 @@
 <link rel="stylesheet" href="/public/css/til.css">
 
 <!-- Google fonts -->
-<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic&subset=latin-ext">
 <link href='https://fonts.googleapis.com/css?family=Give+You+Glory' rel='stylesheet' type='text/css'>
 
 
@@ -66,27 +66,26 @@
   <h2>Redis For HA And Load Balancing Of A Service - Part-1</h2>
 
   <p>Its been long since I have written a blog post, mostly because of my busy schedule and new life after University.
-A lot has happened since then, about which I plan to write seperate blog posts. </p>
+A lot has happened since then, about which I plan to write seperate blog posts.</p>
 
-<p>I have been working with the DevOps team at <a href="http://browserstack.com/">BrowserStack</a> for a few months now. In this post I&#39;ll describe an interesting problem I have been working on recently.</p>
+<p>I have been working with the DevOps team at <a href="http://browserstack.com/">BrowserStack</a> for a few months now. In this post I’ll describe an interesting problem I have been working on recently.</p>
 
-<h2>Problem</h2>
-
+<h2 id="problem">Problem</h2>
 <p>Writing a highly available/ multi AZ service deployed independently in each region which does aggregation of data in fixed time intervals and pushes to a database cluster.</p>
 
 <p>Lets first look and try to understand the given architecture:
-<img src="/public/images/event_data_service.png" alt="Event Data Service"/></p>
+<img src="/public/images/event_data_service.png" alt="Event Data Service" /></p>
 
 <p>In the above architecture we have:</p>
 
 <ol>
-<li>Multiple Services and Products all in same region. For example: us-east</li>
-<li>All services communicate with database servers via DNS which provides round robin load balancing.</li>
-<li>Machine-1 and Machine-2 both have exact same configuration and services - UDP broadcast relayer and InfluxDB in two availability zones. For example: us-east-1a and us-east-1b</li>
-<li>If a request from any of the productA, productB etc hits our DNS it can be redirected to either Machine-1 or Machine-2.</li>
-<li>UDP relayer make sure that both databases contain the same data, i.e if a request comes on Machine-1 it is automatically sent to Machine-2 and vice versa.</li>
-<li>Each product sends the database cluster an event message whenever a user event happens on it.</li>
-<li>The message contains 4 parameters (event-type, product, username, timestamp).</li>
+  <li>Multiple Services and Products all in same region. For example: us-east</li>
+  <li>All services communicate with database servers via DNS which provides round robin load balancing.</li>
+  <li>Machine-1 and Machine-2 both have exact same configuration and services - UDP broadcast relayer and InfluxDB in two availability zones. For example: us-east-1a and us-east-1b</li>
+  <li>If a request from any of the productA, productB etc hits our DNS it can be redirected to either Machine-1 or Machine-2.</li>
+  <li>UDP relayer make sure that both databases contain the same data, i.e if a request comes on Machine-1 it is automatically sent to Machine-2 and vice versa.</li>
+  <li>Each product sends the database cluster an event message whenever a user event happens on it.</li>
+  <li>The message contains 4 parameters (event-type, product, username, timestamp).</li>
 </ol>
 
 <p>Event message examples:</p>
@@ -102,7 +101,7 @@ A lot has happened since then, about which I plan to write seperate blog posts. 
 <p>Consider the following use case:</p>
 
 <ol>
-<li>For instrumentation purpose, we need to count the total number of particular event types(eg: http-5xx, browser_error, etc) which happened for a particular product(eg: productA, productB) per minute and also get the same count for unique users.</li>
+  <li>For instrumentation purpose, we need to count the total number of particular event types(eg: http-5xx, browser_error, etc) which happened for a particular product(eg: productA, productB) per minute and also get the same count for unique users.</li>
 </ol>
 
 <p>According to the given use case the above 5 example messages will yield an output:</p>
@@ -114,67 +113,61 @@ cumulative_user_event,event_type<span class="o">=</span>os_error,product<span cl
 unique_user_event,event_type<span class="o">=</span>browser_error,product<span class="o">=</span>productB <span class="nv">value</span><span class="o">=</span>2
 cumulative_user_event,event_type<span class="o">=</span>browser_error,product<span class="o">=</span>productB <span class="nv">value</span><span class="o">=</span>2</code></pre></figure>
 
-<h2>Understanding the above output</h2>
+<h2 id="understanding-the-above-output">Understanding the above output</h2>
+<p><code class="language-plaintext highlighter-rouge">cumulative_user_event</code> tag describes events which happened within one minute for a particular product, i.e if an event happened for testuser1 two times within a minute it will be counted two times. On the other hand</p>
 
-<p><code>cumulative_user_event</code> tag describes events which happened within one minute for a particular product, i.e if an event happened for testuser1 two times within a minute it will be counted two times. On the other hand</p>
-
-<p><code>unique_user_event</code> tag describes events which happened within one minute for a particular product, considering unique users only, i.e if an event happened for testuser1 two times within a minute it will be counted once only.</p>
+<p><code class="language-plaintext highlighter-rouge">unique_user_event</code> tag describes events which happened within one minute for a particular product, considering unique users only, i.e if an event happened for testuser1 two times within a minute it will be counted once only.</p>
 
 <ol>
-<li>The first output message says: Within a duration of 1 minute the product <code>productA</code> gave <code>http-5xx</code> to 1 user only.</li>
-<li>The second output message says: Within a duration of 1 minute the product <code>productA</code> gave <code>http-5xx</code> 2 times.</li>
-<li>The third output message says: Within a duration of 1 minute the product <code>productA</code> gave <code>os_error</code> to 1 user only.</li>
-<li>The fourth output message says: Within a duration of 1 minute the product <code>productA</code> gave <code>os_error</code> 1 time only.</li>
-<li>The fifth output message says: Within a duration of 1 minute the product <code>productB</code> gave <code>browser_error</code> to 2 users.</li>
-<li>The sixth output message says: Within a duration of 1 minute the product <code>productB</code> gave <code>browser_error</code> 2 times.</li>
+  <li>The first output message says: Within a duration of 1 minute the product <code class="language-plaintext highlighter-rouge">productA</code> gave <code class="language-plaintext highlighter-rouge">http-5xx</code> to 1 user only.</li>
+  <li>The second output message says: Within a duration of 1 minute the product <code class="language-plaintext highlighter-rouge">productA</code> gave <code class="language-plaintext highlighter-rouge">http-5xx</code> 2 times.</li>
+  <li>The third output message says: Within a duration of 1 minute the product <code class="language-plaintext highlighter-rouge">productA</code> gave <code class="language-plaintext highlighter-rouge">os_error</code> to 1 user only.</li>
+  <li>The fourth output message says: Within a duration of 1 minute the product <code class="language-plaintext highlighter-rouge">productA</code> gave <code class="language-plaintext highlighter-rouge">os_error</code> 1 time only.</li>
+  <li>The fifth output message says: Within a duration of 1 minute the product <code class="language-plaintext highlighter-rouge">productB</code> gave <code class="language-plaintext highlighter-rouge">browser_error</code> to 2 users.</li>
+  <li>The sixth output message says: Within a duration of 1 minute the product <code class="language-plaintext highlighter-rouge">productB</code> gave <code class="language-plaintext highlighter-rouge">browser_error</code> 2 times.</li>
 </ol>
 
-<h2>Service Requirements</h2>
+<h2 id="service-requirements">Service Requirements</h2>
+<p>Let’s call the above example messages as input, the output yield as output and the service to be implemented as Event Data Service.
+It should be pretty clear by now that we need to write a service which takes in the <code class="language-plaintext highlighter-rouge">input</code> from multiple products and sends <code class="language-plaintext highlighter-rouge">output</code> to the database cluster.</p>
 
-<p>Let&#39;s call the above example messages as input, the output yield as output and the service to be implemented as Event Data Service.
-It should be pretty clear by now that we need to write a service which takes in the <code>input</code> from multiple products and sends <code>output</code> to the database cluster.</p>
-
-<h2>Easy and unpromising solution</h2>
-
+<h2 id="easy-and-unpromising-solution">Easy and unpromising solution</h2>
 <p>We use a simple hash map with the following keys and values:</p>
 
 <ol>
-<li><code>cumulative_user_event,&lt;product_type&gt;,&lt;event_type&gt;</code> : <code>(int)(count_of_events)</code></li>
-<li><code>unique_user_event,&lt;product_type&gt;,&lt;event_type&gt;</code> : <code>(set)(usernames)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">cumulative_user_event,&lt;product_type&gt;,&lt;event_type&gt; </code> : ` (int)(count_of_events)`</li>
+  <li><code class="language-plaintext highlighter-rouge">unique_user_event,&lt;product_type&gt;,&lt;event_type&gt;</code> : <code class="language-plaintext highlighter-rouge">(set)(usernames)</code></li>
 </ol>
 
-<p>Whenever a new message comes we increase the counter for cumulative<em>user</em>event, and add a username to set corresposnding to unique<em>user</em>event.
+<p>Whenever a new message comes we increase the counter for cumulative_user_event, and add a username to set corresposnding to unique_user_event.
 Parallely, we run a loop every minute and send the aggregated ouput:
-<code>cumulative_user_event with the counter and unique_user_event with the cardinality of set</code>
+<code class="language-plaintext highlighter-rouge">cumulative_user_event with the counter and unique_user_event with the cardinality of set</code>
 to database cluster and clear the hash maps.</p>
 
-<p><img src="/public/images/event_data_service_easy_solution.png" alt="Event Data Service Easy Solution"/></p>
+<p><img src="/public/images/event_data_service_easy_solution.png" alt="Event Data Service Easy Solution" /></p>
 
-<h2>Problems with above solution</h2>
-
+<h2 id="problems-with-above-solution">Problems with above solution</h2>
 <p>The above solution works perfectly fine when deployed on a single machine as a service, but deploying the service on a single node makes it a single point of failure for our complete system, i.e even though we have HA for our database but whenever the node containing Event Data Service crashes, all our database servers stop receiving data.</p>
 
 <p>If you observe carefully, in this solution we can simply deploy the service on Machine-1 or Machine-2 and just point our DNS to one of them with deployed service. It will disable our HA and when the server pointed by DNS crashes whole of our system will crash.</p>
 
-<h2>Deploying Event Data Service on multiple machines</h2>
-
+<h2 id="deploying-event-data-service-on-multiple-machines">Deploying Event Data Service on multiple machines</h2>
 <p>This is the actual solution for our problem and the main reason of this blog post, i.e we want to deploy our Event Data Service both on Machine-1 and Machine-2.</p>
 
-<h2>Challenges and Brainstorming</h2>
-
-<p>I&#39;ll describe solution for how to achieve this in my next post i.e Part-2 of this series but I&#39;ll leave some interesting hints for reader to brainstorm on:</p>
+<h2 id="challenges-and-brainstorming">Challenges and Brainstorming</h2>
+<p>I’ll describe solution for how to achieve this in my next post i.e Part-2 of this series but I’ll leave some interesting hints for reader to brainstorm on:</p>
 
 <p>When Event Data Service gets deployed to both Machine-1 and Machine-2, DNS points to both the machines and does regular round robin load balancing:</p>
 
 <ol>
-<li>Which machine gets the event messages from products ?</li>
-<li>When does that machine gets the message ?</li>
-<li>Which machine processes and pushes data and at what intervals ?</li>
-<li>Does the one minute loop finish at same time on both machines ?</li>
-<li>What is the title of this post ? :)</li>
+  <li>Which machine gets the event messages from products ?</li>
+  <li>When does that machine gets the message ?</li>
+  <li>Which machine processes and pushes data and at what intervals ?</li>
+  <li>Does the one minute loop finish at same time on both machines ?</li>
+  <li>What is the title of this post ? :)</li>
 </ol>
 
-<p>Until then keep thinking and stay tuned. Feel free to discuss the possible solution with me in the meantime or ask questions if you couldn&#39;t get the problem statement clearly.</p>
+<p>Until then keep thinking and stay tuned. Feel free to discuss the possible solution with me in the meantime or ask questions if you couldn’t get the problem statement clearly.</p>
 
 
 </article>
@@ -193,8 +186,8 @@ to database cluster and clear the hash maps.</p>
             (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
         })();
     </script>
-    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
     
 
       
@@ -203,9 +196,7 @@ to database cluster and clear the hash maps.</p>
 
       <footer>
           <p>
-          Subscribe to: <a href="/feed.xml" target="_blank">Posts(Atom)</a>
-	  <br/>
-	  No Attributions, It's all yours under <a rel="license" href="http://creativecommons.org/publicdomain/zero/1.0/"> Creative Commons CC0</a>.
+          Thank you, please contact via email
         </p>
       </footer>
     </div>
